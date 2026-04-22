@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propuesta Estratégica - Queenchis | OPEN CLUB</title>
+    <title>Propuesta estratégica - Queenchis | OPEN CLUB</title>
     
-    <!-- TAILWIND CSS -->
+    <!-- Librerías de exportación PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Estilos y React -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- GOOGLE FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- CONFIGURACIÓN DE COLORES OPEN CLUB -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -21,7 +26,7 @@
                     colors: {
                         ocd: {
                             black: '#050505',
-                            green: '#00D64F',
+                            green: '#4ADE80',
                             gray: '#F8F9FA',
                             textMuted: '#656568',
                             border: '#E5E7EB'
@@ -37,238 +42,533 @@
     </script>
 
     <style>
-        body {
-            background-color: #f3f4f6; /* Fondo gris fuera del papel */
-            -webkit-font-smoothing: antialiased;
+        body { background-color: #f3f4f6; -webkit-font-smoothing: antialiased; }
+        .a4-page { width: 100%; max-width: 210mm; min-height: 297mm; background: white; margin: 2rem auto; padding: 20mm; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); position: relative; }
+        .sde-table th { background-color: #050505; color: white; padding: 10px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; font-family: 'Space Mono', monospace; }
+        .sde-table td { padding: 12px; border-bottom: 1px solid #E5E7EB; font-size: 13px; color: #374151; transition: background-color 0.2s; }
+        .sde-table tr:last-child td { border-bottom: none; }
+        .sde-table tbody tr { cursor: pointer; }
+        .sde-table tbody tr:hover td { background-color: #f0fdf4; }
+        .radar-grid { stroke: #E5E7EB; stroke-width: 1; fill: none; }
+        .radar-axis { stroke: #E5E7EB; stroke-width: 1; }
+        .radar-area-current { fill: #8B8B8B; fill-opacity: 0.15; stroke: #8B8B8B; stroke-width: 1; }
+        .radar-area-potential { fill: #4ADE80; fill-opacity: 0.25; stroke: #4ADE80; stroke-width: 2.5; }
+        
+        .timeline-container { position: relative; padding-top: 20px; }
+        .timeline-line { height: 2px; background: #E5E7EB; position: absolute; top: 30px; left: 0; right: 0; }
+        .timeline-dot { width: 10px; height: 10px; background: #E5E7EB; border-radius: 50%; position: relative; z-index: 1; }
+        .timeline-dot.active { background: #4ADE80; box-shadow: 0 0 8px #4ADE80; }
+
+        /* Quick Cart Module */
+        .quick-cart {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-family: 'Inter', sans-serif;
         }
         
-        /* Formato A4 para impresión y visualización */
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            background: white;
-            margin: 2rem auto;
-            padding: 20mm;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            position: relative;
+        .cart-bubble {
+            background: #050505;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .cart-bubble:hover { transform: scale(1.05); border-color: #4ADE80; }
+
+        .cart-dropdown {
+            width: 340px;
+            background: #050505;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 15px;
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Reglas de impresión */
-        @media print {
-            body { background-color: white; }
-            .a4-page {
-                width: 100%;
-                min-height: 100%;
-                margin: 0;
-                padding: 0;
-                box-shadow: none;
-            }
-            .no-print { display: none !important; }
-            
-            /* Forzar colores de fondo e impresión exacta */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
+        .cart-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
-        
-        /* Utilidades gráficas */
-        .clinical-border { border-left: 3px solid #00D64F; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4ADE80; border-radius: 10px; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; }
+            .a4-page { width: 100%; max-width: none; min-height: 100%; margin: 0; padding: 10mm; box-shadow: none; border: none; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
-<body className="text-ocd-black font-sans">
+<body>
+    <div id="root"></div>
 
-    <!-- BOTÓN FLOTANTE PARA EXPORTAR A PDF (Se oculta al imprimir) -->
-    <button 
-        onclick="window.print()" 
-        class="no-print fixed bottom-8 right-8 bg-ocd-black text-white px-6 py-3 rounded-full font-mono text-xs font-bold tracking-widest uppercase flex items-center gap-3 shadow-2xl hover:bg-ocd-green hover:text-black transition-colors z-50"
-    >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Exportar a PDF
-    </button>
+    <script type="text/babel">
+        const { useState, useMemo } = React;
 
-    <!-- DOCUMENTO A4 -->
-    <div class="a4-page text-sm text-gray-800">
-        
-        <!-- HEADER -->
-        <header class="flex justify-between items-end border-b-2 border-ocd-black pb-6 mb-10">
-            <div>
-                <div class="flex items-center gap-2 mb-1">
-                    <div class="w-3 h-3 bg-ocd-green rounded-full"></div>
-                    <h1 class="font-black text-3xl tracking-tighter text-ocd-black uppercase">OPEN CLUB</h1>
-                </div>
-                <div class="font-mono text-[9px] tracking-[0.25em] text-ocd-textMuted uppercase font-bold">
-                    System Infrastructure
-                </div>
-            </div>
-            <div class="text-right font-mono text-[10px] text-ocd-textMuted leading-relaxed">
-                <div>DOC_REF: OCD-PRP-QCH</div>
-                <div>FECHA: 21 ABR 2026</div>
-                <div class="text-ocd-green font-bold mt-1 bg-ocd-green/10 px-2 py-0.5 inline-block">STATUS: VALID</div>
-            </div>
-        </header>
+        const fCLP = (num) => '$' + Math.round(num).toLocaleString('es-CL');
 
-        <!-- TÍTULO DE DOCUMENTO -->
-        <div class="mb-10">
-            <h2 class="text-2xl font-bold tracking-tight text-ocd-black mb-3">Propuesta Técnica y Económica</h2>
-            <div class="font-mono text-xs bg-ocd-gray border border-ocd-border inline-block px-3 py-1.5 text-ocd-black font-bold tracking-widest uppercase">
-                CLIENTE: QUEENCHIS
-            </div>
-        </div>
+        const BASE_RATE = 25000;
+        const DISCOUNT_PCT = 0.20;
 
-        <!-- RESUMEN FINANCIERO (KPIs) -->
-        <div class="grid grid-cols-3 gap-4 mb-12">
-            <div class="border border-ocd-border p-4 bg-white">
-                <div class="font-mono text-[9px] text-ocd-textMuted tracking-widest uppercase mb-2">Valor Hora Senior</div>
-                <div class="text-xl font-bold text-ocd-black">$25.000 <span class="text-sm font-normal text-gray-400">CLP</span></div>
-            </div>
-            <div class="border border-ocd-border p-4 bg-white">
-                <div class="font-mono text-[9px] text-ocd-textMuted tracking-widest uppercase mb-2">Inversión Total</div>
-                <div class="text-xl font-bold text-ocd-green">$450.000 <span class="text-sm font-normal text-gray-400">CLP</span></div>
-            </div>
-            <div class="border border-ocd-border p-4 bg-white">
-                <div class="font-mono text-[9px] text-ocd-textMuted tracking-widest uppercase mb-2">Esfuerzo Técnico</div>
-                <div class="text-xl font-bold text-ocd-black">18 <span class="text-sm font-normal text-gray-400">horas</span></div>
-            </div>
-        </div>
+        const PHASES = [
+            {
+                id: 'f1',
+                title: 'Fase 1: Identidad & Fundación',
+                tag: 'NECESARIA',
+                color: 'bg-ocd-green text-black font-bold',
+                items: [
+                    { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico del proyecto (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
+                    { id: 'f1_1', name: 'Logo principal + sistema visual', desc: 'Desarrollo de 2 direcciones gráficas estratégicas, versiones oficiales y reducciones técnicas.', hours: 14.0, days: 5, isEssential: true },
+                    { id: 'f1_2', name: 'Manual de marca', desc: 'Guía técnica integral que consolida paleta de colores (burdeo, negro, blanco), familia tipográfica y normas de uso.', hours: 5.0, days: 2, isEssential: true },
+                    { id: 'f1_3', name: 'Señalética física', desc: 'Diseño técnico de señalización de marca para el local físico en Providencia.', hours: 4.0, days: 2, isEssential: true },
+                    { id: 'f1_4', name: 'Diseño de menú base', desc: 'Diseño de 1 ejemplar maestro de carta. Arquitectura de contenido para destacar la propuesta de autor.', hours: 6.0, days: 3, isEssential: true }
+                ]
+            },
+            {
+                id: 'f2',
+                title: 'Fase 2: Expansión & Arte visual',
+                tag: 'SUGERIDA',
+                color: 'bg-ocd-black text-ocd-green',
+                items: [
+                    { id: 'f2_1', name: 'Stickers packaging', desc: 'Diseño de 2 variantes de etiquetas de marca y sellos de seguridad para despachos y delivery.', hours: 2.0, days: 1 },
+                    { id: 'f2_m', name: 'Ilustración / Mascot creation', desc: 'Desarrollo de mascota animada basada en la perrita Queen (estilo Japón, Shih-tzu/Maltés mix) en 3 poses.', hours: 8.0, days: 4 },
+                    { id: 'f2_p', name: 'Dirección creativa para campaña', desc: 'Conceptos visuales y narrativa para el lanzamiento del local y redes sociales.', hours: 6.0, days: 3 },
+                    { id: 'f2_f', name: 'Reunión: Presentación final', desc: 'Cierre de etapa de diseño y entrega oficial de activos del sistema (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0 }
+                ]
+            },
+            {
+                id: 'f3',
+                title: 'Fase 3: Entorno digital & Merch',
+                tag: 'OPCIONAL',
+                color: 'bg-zinc-100 text-zinc-500',
+                items: [
+                    { id: 'f3_1', name: 'Landing page (Diseño UI o HTML)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML listo para ser implementado en web.', hours: 25.0, days: 10 },
+                    { id: 'f3_2', name: '12 plantillas editables RRSS', desc: 'Set de 12 plantillas maestras a elección del cliente (pueden ser Posts o Stories).', hours: 6.5, days: 3 },
+                    { id: 'm_base', name: 'Merch / Diseño base', desc: 'Aplicación simple en delantales, bolsas tote e indumentaria varia.', hours: 2.5, days: 2 },
+                    { id: 'm_complex', name: 'Merch / Diseño ilustrado', desc: 'Arte a gran escala o ilustración compleja aplicada a soportes textiles premium.', hours: 5.5, days: 4 },
+                    { id: 'cons_1', name: 'Consultoría estratégica', desc: 'Asesoría técnica para la toma de decisiones tácticas o expansivas (valor por hora).', hours: 1.0, days: 0, priceOverride: 20000 }
+                ]
+            }
+        ];
 
-        <!-- DESGLOSE DEL ROADMAP -->
-        <div class="mb-12">
-            <div class="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-2">/// ROADMAP DE EJECUCIÓN</div>
-            <h3 class="text-lg font-bold text-ocd-black mb-6 border-b border-ocd-border pb-2">Desglose por Fases</h3>
+        const RadarChart = ({ data }) => {
+            const points = data.length;
+            const radius = 68; 
+            const center = 100;
+            const angleStep = (Math.PI * 2) / points;
+            const getPath = (values) => {
+                return values.map((val, i) => {
+                    const r = (val / 10) * radius;
+                    const x = center + r * Math.sin(i * angleStep);
+                    const y = center - r * Math.cos(i * angleStep);
+                    return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(' ') + ' Z';
+            };
+            return (
+                <svg viewBox="0 0 200 200" className="w-full h-full max-w-[280px] mx-auto font-sans overflow-visible">
+                    {[0.2, 0.4, 0.6, 0.8, 1].map((p, i) => (
+                        <circle key={i} cx={center} cy={center} r={radius * p} className="radar-grid" />
+                    ))}
+                    {data.map((_, i) => {
+                        const x2 = center + radius * Math.sin(i * angleStep);
+                        const y2 = center - radius * Math.cos(i * angleStep);
+                        return <line key={i} x1={center} y1={center} x2={x2} y2={y2} className="radar-axis" />;
+                    })}
+                    <path d={getPath(data.map(d => d.current))} className="radar-area-current" />
+                    <path d={getPath(data.map(d => d.potential))} className="radar-area-potential" />
+                    {data.map((d, i) => {
+                        const x = center + (radius + 22) * Math.sin(i * angleStep);
+                        const y = center - (radius + 18) * Math.cos(i * angleStep);
+                        return (
+                            <text key={i} x={x} y={y} textAnchor="middle" className="font-mono text-[6.5px] uppercase tracking-tighter fill-zinc-500 font-bold">
+                                {d.axis}
+                            </text>
+                        );
+                    })}
+                </svg>
+            );
+        };
 
-            <!-- FASE 1 -->
-            <div class="mb-8">
-                <div class="flex justify-between items-center bg-ocd-gray px-4 py-2 border border-ocd-border mb-3">
-                    <div class="font-bold text-ocd-black">Fase 1: Identidad de Marca</div>
-                    <div class="font-mono text-xs text-ocd-textMuted font-bold">13 HRS</div>
-                </div>
-                <table class="w-full text-left text-sm">
-                    <tbody>
-                        <tr class="border-b border-gray-100">
-                            <td class="py-3 pr-4 text-gray-600">Investigación y desarrollo de conceptos (2 opciones)</td>
-                            <td class="py-3 font-mono text-xs text-ocd-textMuted w-24 text-right">5 hrs</td>
-                            <td class="py-3 font-mono text-xs font-bold text-ocd-black w-28 text-right">$125.000</td>
-                        </tr>
-                        <tr class="border-b border-gray-100">
-                            <td class="py-3 pr-4 text-gray-600">Refinamiento y versiones de logo (vertical, horizontal, sello)</td>
-                            <td class="py-3 font-mono text-xs text-ocd-textMuted w-24 text-right">3 hrs</td>
-                            <td class="py-3 font-mono text-xs font-bold text-ocd-black w-28 text-right">$75.000</td>
-                        </tr>
-                        <tr class="border-b border-gray-100">
-                            <td class="py-3 pr-4 text-gray-600">Definición de cromatismo y sistema tipográfico</td>
-                            <td class="py-3 font-mono text-xs text-ocd-textMuted w-24 text-right">2 hrs</td>
-                            <td class="py-3 font-mono text-xs font-bold text-ocd-black w-28 text-right">$50.000</td>
-                        </tr>
-                        <tr class="border-b border-gray-100">
-                            <td class="py-3 pr-4 text-gray-600">Presentación de marca y mockups de concepto</td>
-                            <td class="py-3 font-mono text-xs text-ocd-textMuted w-24 text-right">3 hrs</td>
-                            <td class="py-3 font-mono text-xs font-bold text-ocd-black w-28 text-right">$75.000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        const App = () => {
+            const [selectedItems, setSelectedItems] = useState(new Set([
+                'f1_0', 'f1_1', 'f1_2', 'f1_3', 'f1_4', 'f2_1', 'f2_f'
+            ]));
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            const [isExporting, setIsExporting] = useState(false);
 
-            <!-- FASE 2 -->
-            <div class="mb-4">
-                <div class="flex justify-between items-center bg-ocd-gray px-4 py-2 border border-ocd-border mb-3">
-                    <div class="font-bold text-ocd-black">Fase 2: Aplicaciones de Marca</div>
-                    <div class="font-mono text-xs text-ocd-textMuted font-bold">5 HRS</div>
-                </div>
-                <table class="w-full text-left text-sm">
-                    <tbody>
-                        <tr class="border-b border-gray-100">
-                            <td class="py-3 pr-4 text-gray-600">Diseño de menú estratégico (digital e impreso)</td>
-                            <td class="py-3 font-mono text-xs text-ocd-textMuted w-24 text-right">3 hrs</td>
-                            <td class="py-3 font-mono text-xs font-bold text-ocd-black w-28 text-right">$75.000</td>
-                        </tr>
-                        <tr class="border-b border-gray-100">
-                            <td class="py-3 pr-4 text-gray-600">Diseño de sticker y mockups de impresión</td>
-                            <td class="py-3 font-mono text-xs text-ocd-textMuted w-24 text-right">2 hrs</td>
-                            <td class="py-3 font-mono text-xs font-bold text-ocd-black w-28 text-right">$50.000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            const toggleItem = (id) => {
+                const next = new Set(selectedItems);
+                if (next.has(id)) next.delete(id); else next.add(id);
+                setSelectedItems(next);
+            };
 
-        <!-- ENTREGABLES FINALES -->
-        <div class="mb-12">
-            <div class="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-2">/// HANDOFF</div>
-            <h3 class="text-lg font-bold text-ocd-black mb-4 border-b border-ocd-border pb-2">Entregables Finales</h3>
-            <ul class="space-y-3">
-                <li class="flex items-start gap-3">
-                    <svg class="w-4 h-4 text-ocd-green mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline stroke-width="3" points="20 6 9 17 4 12"></polyline></svg>
-                    <div>
-                        <span class="font-bold text-ocd-black">Logotipo oficial:</span> 
-                        <span class="text-gray-600">Formatos para impresión (AI, EPS, PDF) y web (PNG, JPG, SVG).</span>
+            const stats = useMemo(() => {
+                let hrs = 0; let days = 0; let rawTotal = 0;
+                const details = [];
+                PHASES.forEach(p => {
+                    p.items.forEach(i => {
+                        if (selectedItems.has(i.id)) {
+                            const itemPrice = (i.priceOverride !== undefined ? i.priceOverride : i.hours * BASE_RATE);
+                            hrs += i.hours;
+                            days += i.days;
+                            rawTotal += itemPrice;
+                            details.push({ name: i.name, price: itemPrice, isEssential: i.isEssential });
+                        }
+                    });
+                });
+                const margin = Math.ceil(days * 0.20);
+                const totalDays = days + margin;
+                const totalWeeks = (totalDays / 5).toFixed(1);
+                const discount = rawTotal * DISCOUNT_PCT;
+                const final = rawTotal - discount;
+                return { hrs, totalDays, totalWeeks, baseTotal: rawTotal, discount, final, details };
+            }, [selectedItems]);
+
+            const radarData = useMemo(() => {
+                const sIds = Array.from(selectedItems);
+                return [
+                    { axis: 'Identidad Visual', current: 2, potential: sIds.some(id => id.includes('f1_1')) ? 9.5 : 4 },
+                    { axis: 'Presencia Digital', current: 1.5, potential: 5 }, 
+                    { axis: 'Experiencia Local', current: 2, potential: sIds.includes('f1_4') ? 9.2 : 6 },
+                    { axis: 'Branding Físico', current: 2, potential: sIds.includes('f1_3') ? 9 : 5 },
+                    { axis: 'Contenido Social', current: 3, potential: 5 } 
+                ];
+            }, [selectedItems]);
+
+            const handleExport = async () => {
+                setIsExporting(true);
+                setIsCartOpen(false);
+                
+                // Pequeño timeout para asegurar que el DOM se actualice antes de la captura
+                setTimeout(async () => {
+                    const element = document.querySelector('.a4-page');
+                    try {
+                        const canvas = await html2canvas(element, {
+                            scale: 2,
+                            useCORS: true,
+                            backgroundColor: '#ffffff'
+                        });
+                        const imgData = canvas.toDataURL('image/png');
+                        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                        pdf.save('Propuesta_Estrategica_Queenchis.pdf');
+                    } catch (err) {
+                        console.error('Error al exportar PDF:', err);
+                        window.print(); // Fallback
+                    } finally {
+                        setIsExporting(false);
+                    }
+                }, 100);
+            };
+
+            return (
+                <div className="text-ocd-black font-sans flex flex-col items-center relative">
+                    
+                    {/* QUICK CART MODULE */}
+                    {!isExporting && (
+                        <div className="quick-cart no-print">
+                            <div className={`cart-dropdown ${isCartOpen ? 'open' : ''}`}>
+                                <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                                    <span className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-500">System Cart</span>
+                                    <button onClick={() => setIsCartOpen(false)} className="text-zinc-500 hover:text-white"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                                </div>
+                                
+                                <div className="max-h-[300px] overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                                    {stats.details.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between items-start gap-4">
+                                            <span className="text-[11px] text-zinc-300 font-medium leading-snug">
+                                                {item.name} {item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}
+                                            </span>
+                                            <span className="font-mono text-[10px] text-ocd-green shrink-0">{item.price > 0 ? fCLP(item.price) : 'Cortesía'}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
+                                    <div className="flex justify-between text-[11px] text-zinc-400 font-mono">
+                                        <span>Subtotal</span>
+                                        <span>{fCLP(stats.baseTotal)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[11px] text-ocd-green font-mono font-bold">
+                                        <span>Open Ticket (-20%)</span>
+                                        <span>-{fCLP(stats.discount)}</span>
+                                    </div>
+                                    <div className="h-px w-full bg-white/10 my-2"></div>
+                                    <div className="flex justify-between items-end">
+                                        <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">Inversión Final</span>
+                                        <span className="text-2xl font-black text-white tracking-tighter leading-none">{fCLP(stats.final)}</span>
+                                    </div>
+                                    <button onClick={handleExport} className="w-full mt-4 bg-white text-black font-mono text-[10px] font-bold py-3 rounded-lg uppercase tracking-widest hover:bg-ocd-green transition-all shadow-lg active:scale-[0.98]">
+                                        Exportar Propuesta
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="cart-bubble" onClick={() => setIsCartOpen(!isCartOpen)}>
+                                <div className="flex flex-col items-start leading-none">
+                                    <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-1">Total Proyecto</span>
+                                    <span className="text-lg font-black tracking-tight">{fCLP(stats.final)}</span>
+                                </div>
+                                <div className="w-px h-8 bg-white/20"></div>
+                                <div className="bg-ocd-green text-black w-7 h-7 rounded-full flex items-center justify-center">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* DOCUMENT PAGE */}
+                    <div className="a4-page">
+                        <header className="flex justify-between items-end border-b-2 border-ocd-black pb-6 mb-10">
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-3 h-3 bg-ocd-green rounded-full"></div>
+                                    <h1 className="font-black text-3xl tracking-tighter text-ocd-black uppercase font-sans leading-none">OPEN CLUB</h1>
+                                </div>
+                                <div className="font-mono text-[9px] tracking-[0.25em] text-ocd-textMuted uppercase font-bold">Visual Infrastructure</div>
+                            </div>
+                            <div className="text-right font-mono text-[10px] text-ocd-textMuted leading-relaxed">
+                                <div>DOC_REF: OCD-PM-QCH-V26</div>
+                                <div>FECHA: 22 ABRIL 2026</div>
+                                <div className="text-ocd-green font-bold mt-1 bg-ocd-green/10 px-2 py-0.5 inline-block uppercase tracking-wider text-[9px]">Status: Valid proposal</div>
+                            </div>
+                        </header>
+
+                        <section className="mb-10">
+                            <h2 className="text-2xl font-bold tracking-tight text-ocd-black mb-4 uppercase tracking-tighter">Contexto</h2>
+                            <div className="text-zinc-700 text-[13.5px] leading-relaxed max-w-2xl mb-6">
+                                <p className="mb-3">
+                                    Queenchis es una sandwichería de autor inspirada en la mascota Queen (el nombre rescata el sonido fonético de "Cuinchi"). Ubicado en la Galería La Pérgola, Avenida Providencia, el proyecto combina el respeto por la cocina de autor con la versatilidad de sándwiches clásicos italianos y carnes de cocción lenta.
+                                </p>
+                                <p>
+                                    Trabajaremos para alinear esta visión gourmet con un sistema de marca escalable, priorizando la identidad core, la mascota, influencias y los puntos de contacto que definen la experiencia de la marca.
+                                </p>
+                            </div>
+                            <div className="font-mono text-[10px] bg-ocd-gray border border-ocd-border inline-block px-3 py-2 text-ocd-black font-bold tracking-widest uppercase">Cliente: Queenchis</div>
+                        </section>
+
+                        <div className="grid grid-cols-2 gap-12 mb-12 items-center bg-zinc-50/50 p-6 rounded-2xl border border-zinc-100">
+                            <div>
+                                <h3 className="text-lg font-bold mb-1 uppercase tracking-tight text-ocd-black">Brand potential matrix</h3>
+                                <p className="text-[10px] text-zinc-400 font-mono uppercase mb-6 tracking-widest">Impacto proyectado en el sistema</p>
+                                <div className="flex items-center gap-4 text-[10px] font-mono font-bold uppercase mb-4">
+                                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-zinc-200"></div> Estado actual</div>
+                                    <div className="flex items-center gap-2"><div className="w-3 h-3 bg-ocd-green"></div> Con Open Club</div>
+                                </div>
+                                <p className="text-xs text-zinc-500 leading-relaxed font-medium text-pretty">Este análisis visualiza cómo la implementación de los servicios escala la percepción y funcionalidad de tu marca frente al mercado.</p>
+                            </div>
+                            <div className="h-64 flex items-center justify-center">
+                                <RadarChart data={radarData} />
+                            </div>
+                        </div>
+
+                        <div className="mb-10 p-6 bg-ocd-gray border border-ocd-border rounded-sm">
+                            <div className="flex justify-between items-end mb-8">
+                                <div>
+                                    <span className="font-mono text-[10px] text-ocd-textMuted font-bold uppercase tracking-widest text-[9px]">Línea de tiempo proyectada</span>
+                                    <div className="text-xl font-bold text-ocd-black uppercase tracking-tighter">Ciclo de entrega: ~{stats.totalWeeks} semanas</div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="font-mono text-[10px] text-ocd-textMuted font-bold uppercase tracking-widest text-[9px]">Esfuerzo técnico</span>
+                                    <div className="text-xl font-bold text-ocd-black">{stats.hrs.toFixed(1)} HH</div>
+                                </div>
+                            </div>
+                            
+                            <div className="timeline-container h-12">
+                                <div className="timeline-line"></div>
+                                <div className="flex justify-between relative">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="timeline-dot active"></div>
+                                        <span className="font-mono text-[9px] font-bold text-ocd-black uppercase">Briefing</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="timeline-dot"></div>
+                                        <span className="font-mono text-[9px] font-bold text-ocd-textMuted uppercase">Concepto</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="timeline-dot"></div>
+                                        <span className="font-mono text-[9px] font-bold text-ocd-textMuted uppercase">Producción</span>
+                                    </div>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="timeline-dot"></div>
+                                        <span className="font-mono text-[9px] font-bold text-ocd-textMuted uppercase">Handoff</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-12 space-y-8">
+                            {PHASES.map((phase) => {
+                                const selectedInPhase = phase.items.filter(i => selectedItems.has(i.id));
+                                const phasePrice = selectedInPhase.reduce((acc, curr) => acc + (curr.priceOverride !== undefined ? curr.priceOverride : curr.hours * BASE_RATE), 0);
+                                const isAllSelected = selectedInPhase.length === phase.items.length;
+                                
+                                return (
+                                    <div key={phase.id}>
+                                        <div className="flex justify-between items-center bg-ocd-gray px-4 py-2 border border-ocd-border border-b-0 cursor-pointer no-print hover:bg-gray-100 transition-colors" onClick={() => {
+                                            const next = new Set(selectedItems);
+                                            phase.items.forEach(item => { if (isAllSelected) next.delete(item.id); else next.add(item.id); });
+                                            setSelectedItems(next);
+                                        }}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isAllSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-400 bg-white'}`}>
+                                                    {isAllSelected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                </div>
+                                                <div className="font-bold text-ocd-black text-sm uppercase tracking-wide">{phase.title}</div>
+                                                <span className={`font-mono text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-tighter ${phase.color}`}>{phase.tag}</span>
+                                            </div>
+                                            <div className="font-mono text-xs text-ocd-textMuted font-bold">{fCLP(phasePrice)}</div>
+                                        </div>
+
+                                        <table className="w-full text-left sde-table border border-ocd-border">
+                                            <thead>
+                                                <tr>
+                                                    <th className="w-[40%] text-[10px]">Servicio</th>
+                                                    <th className="w-[45%] text-[10px]">Detalle de entregable</th>
+                                                    <th className="w-[15%] text-right text-[10px]">HH</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {phase.items.map(item => {
+                                                    const isSelected = selectedItems.has(item.id);
+                                                    return (
+                                                        <tr key={item.id} className={isSelected ? '' : 'opacity-40 grayscale print:hidden'} onClick={() => toggleItem(item.id)}>
+                                                            <td className="font-medium text-ocd-black">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={`no-print w-3 h-3 rounded-sm border flex items-center justify-center ${isSelected ? 'bg-ocd-green border-ocd-green' : 'border-gray-300'}`}>
+                                                                        {isSelected && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                                    </div>
+                                                                    {item.name}
+                                                                    {item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td className="text-xs text-gray-500 leading-tight">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span>{item.desc}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="text-right font-mono text-ocd-textMuted pr-4">{item.hours > 0 ? item.hours.toFixed(1) : '—'}</td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mb-12 border-2 border-ocd-black rounded-sm overflow-hidden shadow-lg shadow-black/5">
+                            <div className="bg-ocd-black text-white px-6 py-4 font-mono text-xs tracking-widest uppercase font-bold flex justify-between items-center">
+                                <span className="flex items-center gap-2"><div className="w-2 h-2 bg-ocd-green rounded-full animate-pulse"></div> Resumen de inversión</span>
+                                <span className="text-[10px] text-ocd-green font-bold tracking-tight uppercase">Applied Open Ticket: {fCLP(BASE_RATE * 0.8)} /hr</span>
+                            </div>
+                            <div className="p-8 bg-white">
+                                <div className="flex justify-between items-center mb-3 text-sm">
+                                    <span className="text-ocd-textMuted font-mono uppercase tracking-wide text-[11px]">Inversión base (Nominal)</span>
+                                    <span className="font-mono text-ocd-black">{fCLP(stats.baseTotal)}</span>
+                                </div>
+                                <div className="flex justify-between items-center mb-6 text-sm font-bold text-ocd-green">
+                                    <span className="font-mono uppercase tracking-wide italic text-[11px]">Open ticket benefit (-20%)</span>
+                                    <span className="font-mono">-{fCLP(stats.discount)}</span>
+                                </div>
+                                <div className="h-px w-full bg-ocd-border mb-6"></div>
+                                <div className="flex justify-between items-end">
+                                    <div>
+                                        <span className="block text-xs text-ocd-textMuted font-mono uppercase tracking-wide mb-1 text-[10px]">Total a financiar</span>
+                                        <span className="block text-[10px] text-gray-400 font-medium">Ciclo proyectado: {stats.totalDays} días hábiles.</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-5xl font-black text-ocd-black tracking-tighter">{fCLP(stats.final)}</span>
+                                        <div className="text-[9px] font-mono text-zinc-400 mt-1 uppercase font-bold">Exento de IVA / Moneda CLP</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-10 bg-ocd-gray border border-ocd-border p-6 border-l-4 border-l-ocd-green text-[11px] leading-relaxed text-zinc-600 font-medium italic">
+                            <p>• (*) Los ítems marcados son fundamentales para garantizar la consistencia futura de la marca en todos sus soportes.</p>
+                            <p className="mt-2">• Se requiere un 50% de abono inicial para activar el sistema y reservar agenda en el calendario de producción de Open Club.</p>
+                        </div>
+
+                        <div className="break-before-page pt-12"></div>
+
+                        <div className="mb-12">
+                            <div className="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-2 text-[10px]">/// Handoff</div>
+                            <h3 className="text-2xl font-black text-ocd-black mb-6 border-b border-ocd-border pb-3 uppercase tracking-tighter">Entregables finales</h3>
+                            <ul className="space-y-6">
+                                <li className="flex items-start gap-4">
+                                    <div className="text-ocd-green mt-1">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </div>
+                                    <div>
+                                        <span className="font-bold text-ocd-black block text-sm uppercase tracking-tight mb-1">Logotipo oficial</span> 
+                                        <span className="text-zinc-600 text-[13px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG).</span>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <div className="w-[18px] mt-1"></div>
+                                    <div>
+                                        <span className="font-bold text-ocd-black block text-sm uppercase tracking-tight mb-1">Manual de marca <span className="text-ocd-green font-black">*</span></span> 
+                                        <span className="text-zinc-600 text-[13px] leading-relaxed font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria y dirección de estilo fotográfico para platos. Incluye aplicaciones de marca para referencia de montaje físico.</span>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-4">
+                                    <div className="text-ocd-green mt-1">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </div>
+                                    <div>
+                                        <span className="font-bold text-ocd-black block text-sm uppercase tracking-tight mb-1">Archivos de producción</span> 
+                                        <span className="text-zinc-600 text-[13px] leading-relaxed font-medium">Documentos finales listos para envío directo a imprenta y proveedores externos (Menú, stickers y papelería varia).</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className="mt-32 flex justify-between items-end border-t border-gray-200 pt-10">
+                            <div className="w-48 text-center">
+                                <div className="border-b border-black mb-2 pb-10"></div>
+                                <div className="font-bold text-ocd-black uppercase text-[10px] tracking-widest font-sans">Aprobación Cliente</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="font-mono text-[9px] text-zinc-400 tracking-[0.2em] uppercase font-bold">Open Club System v.26.0</div>
+                            </div>
+                            <div className="w-64 text-right">
+                                <div className="border-b border-black mb-2 pb-10 text-ocd-green font-mono text-[11px] italic font-bold uppercase">Signed_JSJ_Director</div>
+                                <div className="font-bold text-ocd-black text-[13px] uppercase tracking-tighter leading-none">Javiera Saint-Jour</div>
+                                <div className="font-mono text-[9px] text-zinc-500 mt-1 uppercase leading-tight font-bold italic tracking-widest text-right text-pretty">Dirección y producción creativa</div>
+                            </div>
+                        </div>
                     </div>
-                </li>
-                <li class="flex items-start gap-3">
-                    <svg class="w-4 h-4 text-ocd-green mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline stroke-width="3" points="20 6 9 17 4 12"></polyline></svg>
-                    <div>
-                        <span class="font-bold text-ocd-black">Manual de marca (Esencial):</span> 
-                        <span class="text-gray-600">Guía técnica que incluye códigos de color, uso de fuentes, iconografía secundaria (perrita/asia) y dirección de estilo fotográfico para platos.</span>
-                    </div>
-                </li>
-                <li class="flex items-start gap-3">
-                    <svg class="w-4 h-4 text-ocd-green mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline stroke-width="3" points="20 6 9 17 4 12"></polyline></svg>
-                    <div>
-                        <span class="font-bold text-ocd-black">Archivos de producción:</span> 
-                        <span class="text-gray-600">Documentos finales listos para envío a imprenta (menú y stickers).</span>
-                    </div>
-                </li>
-                <li class="flex items-start gap-3">
-                    <svg class="w-4 h-4 text-ocd-green mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline stroke-width="3" points="20 6 9 17 4 12"></polyline></svg>
-                    <div>
-                        <span class="font-bold text-ocd-black">Visualización de marca:</span> 
-                        <span class="text-gray-600">3 mockups de alta fidelidad para referencia de montaje y redes.</span>
-                    </div>
-                </li>
-            </ul>
-        </div>
+                </div>
+            );
+        };
 
-        <!-- CONDICIONES COMERCIALES -->
-        <div class="mb-10 bg-ocd-gray border border-ocd-border p-6 clinical-border">
-            <h3 class="font-mono text-[10px] font-bold tracking-widest text-ocd-black uppercase mb-4">Condiciones Comerciales del Sistema</h3>
-            <div class="space-y-4 text-sm text-gray-700">
-                <p>
-                    <strong class="text-ocd-black">Forma de pago:</strong> 50% abono inicial ($225.000 CLP) para reserva de agenda e inicialización de la Fase 1. El 50% restante se abona contra la entrega de los archivos finales (Handoff).
-                </p>
-                <p>
-                    <strong class="text-ocd-black">Gestión de cambios:</strong> El proceso incluye 3 rondas de revisiones estructurales. Las horas adicionales por solicitudes fuera del alcance inicial se facturarán al valor hora senior estándar especificado en este documento.
-                </p>
-                <p>
-                    <strong class="text-ocd-black text-ocd-green">Actualizaciones futuras (Upgrade):</strong> Finalizada esta etapa fundacional, queda disponible el acceso al <span class="font-mono text-xs font-bold text-ocd-black">Manual de Marca XL</span>, un upgrade que integra tono de voz narrativo, arquetipos de marca y manual avanzado de redes sociales.
-                </p>
-            </div>
-        </div>
-
-        <!-- FIRMAS -->
-        <div class="mt-16 flex justify-between items-end border-t border-gray-200 pt-8">
-            <div class="w-48">
-                <div class="border-b border-black mb-2 pb-6"></div>
-                <div class="font-bold text-ocd-black">Aprobación Cliente</div>
-                <div class="font-mono text-[10px] text-gray-400 mt-1">QUEENCHIS</div>
-            </div>
-            
-            <div class="text-center font-mono text-[10px] text-gray-400 tracking-widest uppercase">
-                SYSTEM.CLOSE()
-            </div>
-
-            <div class="w-48 text-right">
-                <div class="border-b border-black mb-2 pb-6 text-ocd-green font-mono text-xs">SIGNED_OCD</div>
-                <div class="font-bold text-ocd-black">Dirección de Arte</div>
-                <div class="font-mono text-[10px] text-gray-400 mt-1">OPEN CLUB DEPARTMENT</div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Script para inicializar automáticamente la impresión al cargar (Opcional, desactivado por defecto) -->
-    <script>
-        // Descomenta la siguiente línea si deseas que la ventana de impresión/PDF se abra automáticamente
-        // window.onload = () => window.print();
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
-</html>  
+</html>
