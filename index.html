@@ -58,7 +58,7 @@
             background: white; 
             margin: 0 auto; 
             padding: 1.5rem; 
-            padding-bottom: 12rem; /* Espacio para el Bottom Bar */
+            padding-bottom: 4rem; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
             position: relative; 
             z-index: 1;
@@ -71,65 +71,14 @@
                 min-height: 297mm;
                 margin: 2rem auto;
                 padding: 20mm;
-                padding-bottom: 25mm;
+                padding-bottom: 20mm;
                 box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
             }
-        }
-
-        /* Estabilizador de PDF: Asegura colores y layout extendido para captura */
-        .exporting-pdf {
-            width: 800px !important; 
-            max-width: 800px !important;
-            padding: 40px !important;
-            box-shadow: none !important;
-            transform: none !important;
-            background: white !important;
-            position: absolute !important;
-            left: -9999px !important; /* Escondido durante la captura */
-            top: 0 !important;
-        }
-
-        /* Bottom Bar System - Totalmente Fijo en el borde inferior */
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            background: #050505;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            z-index: 9999;
-            padding-bottom: env(safe-area-inset-bottom); /* Manejo de notch/home bar en iOS */
-        }
-
-        .cart-dropdown {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            width: 100%;
-            background: #111113;
-            max-height: 60vh;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            box-shadow: 0 -20px 50px rgba(0,0,0,0.5);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            overflow: hidden;
-            visibility: hidden;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        .cart-dropdown.open {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0);
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4ADE80; border-radius: 10px; }
 
-        .timeline-dot.active { background: #4ADE80; box-shadow: 0 0 10px #4ADE80; }
-        
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -236,13 +185,15 @@
             }
         ];
 
+        // =====================================================================
+        // APP PRINCIPAL
+        // =====================================================================
         const App = () => {
             const [selectedItems, setSelectedItems] = useState(new Set([
                 'f1_0', 'f1_1', 'f1_2', 'f1_3', 'f1_4', 'f2_1', 'f2_pap', 'm_base', 'f2_f'
             ]));
             const [expandedPhases, setExpandedPhases] = useState(new Set(['f1', 'f2', 'f3'])); 
             const [isExporting, setIsExporting] = useState(false);
-            const [isCartOpen, setIsCartOpen] = useState(false);
             const [selectedPlan, setSelectedPlan] = useState('01'); 
             const [isApproved, setIsApproved] = useState(false);
 
@@ -276,7 +227,7 @@
                 const totalWeeks = (totalDays / 5).toFixed(1);
                 const discount = Math.round((rawTotal * DISCOUNT_PCT) / 1000) * 1000;
                 const final = rawTotal - discount;
-                return { totalDays, totalWeeks, rawTotal, discount, final, details };
+                return { totalDays, totalWeeks, rawTotal, discount, final, details, count: selectedItems.size };
             }, [selectedItems]);
 
             const abonoA = Math.round((stats.final * 0.5) / 1000) * 1000;
@@ -285,28 +236,25 @@
             const handleDownloadPDF = async () => {
                 if (isExporting) return;
                 setIsExporting(true);
-                setIsCartOpen(false);
+                const currentScroll = window.scrollY; 
+                window.scrollTo(0, 0); 
 
-                // Esperamos un instante para que el UI se limpie (cerrar dropdown)
                 setTimeout(async () => {
-                    const originalElement = document.querySelector('.a4-page');
-                    
                     try {
-                        // Capturamos el elemento tal como está, especificando el ancho de A4 para mantener el estilo web pero en alta resolución
-                        const canvas = await html2canvas(originalElement, {
-                            scale: 3, // Alta calidad
+                        const element = document.querySelector('.a4-page');
+                        const canvas = await html2canvas(element, {
+                            scale: 2.5,
                             useCORS: true,
                             backgroundColor: '#ffffff',
                             logging: false,
-                            scrollY: -window.scrollY, // Compensa el scroll actual para evitar cortes
-                            windowWidth: 800, // Fuerza ancho de escritorio para el motor de captura
+                            scrollY: 0,
+                            windowWidth: 800
                         });
                         
                         const imgData = canvas.toDataURL('image/png', 1.0);
-                        const imgWidth = 210; // mm
+                        const imgWidth = 210; 
                         const pageHeight = (canvas.height * imgWidth) / canvas.width;
                         
-                        // Generamos un PDF de una sola hoja larga (estilo web)
                         const pdf = new jspdf.jsPDF({
                             orientation: 'p',
                             unit: 'mm',
@@ -315,68 +263,27 @@
                         
                         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight);
                         pdf.save(`Propuesta_Queenchis_OCD_Ruta${selectedPlan}.pdf`);
-                        
                     } catch (err) { 
                         console.error('PDF Error:', err); 
                     } finally {
+                        window.scrollTo(0, currentScroll); 
                         setIsExporting(false);
                     }
-                }, 300);
+                }, 500);
             };
 
             const handleWhatsApp = (type = 'payment') => {
                 const planText = selectedPlan === '01' ? 'Protocolo Bifásico (50/50)' : 'Estructura Trifásica (30/30/40)';
                 const paymentAmount = selectedPlan === '01' ? abonoA : abonoB;
-                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta. Adjunto el PDF y el comprobante por el abono inicial de ${fCLP(paymentAmount)}. Gracias!`;
+                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta. Adjunto el PDF y el comprobante por el abono de ${fCLP(paymentAmount)}. (Mis datos: RUT, Nombres, Domicilio, Comuna). Gracias!`;
                 const helpMsg = `¡Hola Yi! ✶ Tengo algunas dudas sobre la propuesta, ¿podemos conversar?`;
                 const text = type === 'payment' ? paymentMsg : helpMsg;
                 window.location.assign(`https://api.whatsapp.com/send?phone=56949873116&text=${encodeURIComponent(text)}`);
             };
 
             return (
-                <div className="flex flex-col items-center relative min-h-screen">
+                <div className="flex flex-col items-center relative min-h-screen overflow-x-hidden">
                     
-                    {/* BOTTOM BAR SYSTEM - 100% FIJO EN LA PÁGINA */}
-                    {!isExporting && (
-                        <div className="bottom-bar no-print">
-                            <div className={`cart-dropdown ${isCartOpen ? 'open' : ''}`}>
-                                <div className="p-8">
-                                    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                                        <span className="font-mono text-[11px] font-bold tracking-[0.2em] uppercase text-zinc-400">Resumen del Sistema</span>
-                                        <button onClick={() => setIsCartOpen(false)} className="text-zinc-500 hover:text-white p-2">Cerrar</button>
-                                    </div>
-                                    <div className="overflow-y-auto custom-scrollbar max-h-[40vh] pr-2 space-y-2 mb-6">
-                                        {stats.details.map((item, idx) => (
-                                            <div key={idx} className="flex justify-between items-center text-[13px]">
-                                                <span className="text-zinc-400 leading-snug">{item.name}</span>
-                                                <span className="font-mono text-ocd-green shrink-0 ml-4">{item.price > 0 ? fCLP(item.price) : 'Cortesía'}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="pt-4 border-t border-white/10 space-y-4">
-                                        <div className="flex justify-between text-[13px] text-zinc-400 font-mono"><span>Subtotal</span><span>{fCLP(stats.rawTotal)}</span></div>
-                                        <div className="flex justify-between text-[13px] text-ocd-green font-mono font-bold"><span>Open Ticket (-20%)</span><span>-{fCLP(stats.discount)}</span></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="max-w-4xl mx-auto px-6 h-20 md:h-24 flex items-center justify-between gap-4">
-                                <div className="flex flex-col cursor-pointer select-none" onClick={() => setIsCartOpen(!isCartOpen)}>
-                                    <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-1 flex items-center gap-2">
-                                        Total Proyecto <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className={isCartOpen ? 'rotate-0' : 'rotate-180'}><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                    </span>
-                                    <span className="text-2xl md:text-3xl font-black text-white tracking-tight leading-none">{fCLP(stats.final)}</span>
-                                </div>
-                                <button 
-                                    onClick={() => document.getElementById('checkout-section').scrollIntoView({ behavior: 'smooth' })} 
-                                    className="bg-ocd-green text-black font-mono text-[11px] md:text-[13px] font-bold px-6 md:px-10 h-12 md:h-14 rounded-full uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(74,222,128,0.3)]"
-                                >
-                                    Ir a Finalizar
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
                     {/* DOCUMENT PAGE */}
                     <div className="a4-page animate-fade-in">
                         <header className="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-ocd-black pb-5 md:pb-6 mb-10 gap-5 md:gap-0">
@@ -395,7 +302,7 @@
                         </header>
 
                         <section className="mb-10">
-                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-ocd-black mb-4 uppercase tracking-tighter">Contexto</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-ocd-black mb-4 uppercase tracking-tighter text-zinc-900">Contexto</h2>
                             <div className="text-zinc-700 text-sm md:text-[15px] leading-relaxed max-w-2xl mb-5">
                                 <p className="mb-3">
                                     <strong>Queenchis</strong> es una sandwichería de autor inspirada en la mascota Queen (el nombre rescata el sonido fonético de "Cuinchi"). Ubicado en la Galería La Pérgola, Providencia, el proyecto combina el respeto por la cocina de autor con la versatilidad de carnes de cocción lenta.
@@ -448,127 +355,130 @@
                             </div>
                         </div>
 
-                        {/* LISTA DE SERVICIOS */}
-                        <div className="mb-10 space-y-4">
-                            {PHASES.map((phase) => {
-                                const selectedInPhase = phase.items.filter(i => selectedItems.has(i.id));
-                                const phasePrice = selectedInPhase.reduce((acc, curr) => acc + (curr.priceOverride !== undefined ? curr.priceOverride : curr.hours * BASE_RATE), 0);
-                                const isAllSelected = selectedInPhase.length === phase.items.length;
-                                const isExpanded = expandedPhases.has(phase.id);
-
-                                return (
-                                    <div key={phase.id} className="w-full border border-ocd-border rounded-xl overflow-hidden shadow-sm">
-                                        <div 
-                                            className="w-full flex justify-between items-center bg-ocd-gray px-5 py-4 no-print select-none cursor-pointer active:bg-zinc-200 transition-colors"
-                                            onClick={() => togglePhase(phase.id)}
-                                        >
-                                            <div className="flex items-center gap-4 flex-1">
-                                                <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                                </div>
-                                                <div className="font-bold text-ocd-black text-[14px] uppercase tracking-wide leading-none">{phase.title}</div>
-                                                <span className={`font-mono text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-tighter ${phase.color}`}>{phase.tag}</span>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <div className="font-mono text-[13px] text-ocd-textMuted font-bold">{fCLP(phasePrice)}</div>
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const next = new Set(selectedItems);
-                                                        phase.items.forEach(item => { if (isAllSelected) next.delete(item.id); else next.add(item.id); });
-                                                        setSelectedItems(next);
-                                                    }}
-                                                    className={`w-6 h-6 rounded border flex items-center justify-center shrink-0 transition-all active:scale-90 ${isAllSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-400 bg-white'}`}
-                                                >
-                                                    {isAllSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-[10px] md:h-[10px]"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        {isExpanded && (
-                                            <div className="border-t border-ocd-border bg-white divide-y divide-gray-100 animate-fade-in">
-                                                {phase.items.map(item => {
-                                                    const isSelected = selectedItems.has(item.id);
-                                                    const price = item.priceOverride !== undefined ? item.priceOverride : item.hours * BASE_RATE;
-                                                    return (
-                                                        <div key={item.id} onClick={() => toggleItem(item.id)} className={`p-5 md:p-3 grid grid-cols-1 md:grid-cols-12 gap-4 cursor-pointer transition-colors active:bg-green-50 ${isSelected ? 'hover:bg-green-50' : 'opacity-40 grayscale print:hidden'}`}>
-                                                            <div className="md:col-span-4 flex items-start gap-4">
-                                                                <div className={`no-print w-5 h-5 rounded-sm border flex items-center justify-center shrink-0 mt-0.5 transition-all ${isSelected ? 'bg-ocd-green border-ocd-green text-black scale-100' : 'border-gray-300 scale-95'}`}>
-                                                                    {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-2 md:h-2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                                                                </div>
-                                                                <span className="font-bold md:font-medium text-ocd-black text-[15px] md:text-sm leading-tight">{item.name}{item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}</span>
-                                                            </div>
-                                                            <div className="md:col-span-6 pl-10 md:pl-0 text-[14px] md:text-xs text-gray-500 leading-snug">{item.desc}</div>
-                                                            <div className="md:col-span-2 pl-10 md:pl-0 text-left md:text-right font-mono text-[13px] md:text-xs text-ocd-textMuted font-bold uppercase">
-                                                                <span className="md:hidden text-zinc-400 mr-2">Inversión:</span>{fCLP(price)}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* RESUMEN DE INVERSIÓN */}
-                        <div className="mb-12 border-2 border-ocd-black rounded-sm overflow-hidden shadow-lg">
-                            <div className="bg-ocd-black text-white px-6 py-4 font-mono text-[12px] tracking-widest uppercase font-bold flex flex-col md:flex-row justify-between items-center gap-3">
-                                <span className="flex items-center gap-3"><div className="w-2.5 h-2.5 bg-ocd-green rounded-full animate-pulse"></div> Resumen de inversión</span>
-                                <span className="text-[11px] text-ocd-green font-bold tracking-tight uppercase font-mono tracking-widest">Applied Open Ticket: {fCLP(BASE_RATE * 0.8)} /hr</span>
-                            </div>
-                            <div className="p-8 bg-white">
-                                <div className="flex justify-between items-center mb-4 text-[15px] text-zinc-500"><span>Inversión base (Nominal)</span><span className="font-mono text-ocd-black">{fCLP(stats.rawTotal)}</span></div>
-                                <div className="flex justify-between items-center mb-8 text-[15px] font-bold text-ocd-green italic"><span>Benefit Applied (-20%)</span><span className="font-mono">-{fCLP(stats.discount)}</span></div>
-                                <div className="h-px w-full bg-zinc-100 mb-8"></div>
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
-                                    <div><span className="block text-ocd-textMuted font-mono uppercase text-[12px] mb-2 font-bold tracking-widest">Total a financiar</span><span className="block text-[11px] text-gray-400 font-medium tracking-tight">Proyectado: {stats.totalDays} días hábiles.</span></div>
-                                    <div className="text-left md:text-right w-full md:w-auto"><span className="text-5xl md:text-6xl font-black text-ocd-black tracking-tighter block leading-none">{fCLP(stats.final)}</span><div className="text-[10px] font-mono text-zinc-400 uppercase font-bold mt-2 tracking-[0.2em]">Exento de IVA / Moneda CLP</div></div>
+                        {/* LISTA DE SERVICIOS - ACORDEONES INTERACTIVOS */}
+                        <div className="mb-10">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6">
+                                <div>
+                                    <h3 className="text-xl font-black text-ocd-black uppercase tracking-tight">Servicios & Entregables</h3>
+                                    <p className="text-xs text-zinc-500 font-mono uppercase tracking-widest mt-1">✶ Haz clic en los servicios para agregarlos o quitarlos de tu plan personalizado.</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[10px] font-mono text-ocd-green font-bold bg-ocd-green/10 px-2 py-1 rounded">{stats.count} Ítems seleccionados</span>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* SIGUIENTES PASOS */}
-                        <div className="mb-12 bg-white border border-ocd-border p-8 rounded-[1.5rem] shadow-sm">
-                            <span className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-5 block">/// Dinámica de Producción</span>
-                            <h3 className="text-2xl font-black text-ocd-black mb-10 uppercase tracking-tighter">Siguientes Pasos</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                                {[
-                                    { t: 'Kick-off', d: 'Hacemos una reunión inicial para alinear expectativas y trazar el mapa de lo que vamos a construir.' },
-                                    { t: 'Exploración', d: 'Te comparto las primeras propuestas de diseño. Evaluamos caminos y decidimos qué dirección tomar.' },
-                                    { t: 'Refinamiento', d: 'Trabajamos sobre la opción elegida, aplicando tus comentarios hasta que el resultado nos encante.' },
-                                    { t: 'Despliegue', d: 'Preparamos los formatos definitivos y te entrego todos los archivos ordenados y listos para usar.' }
-                                ].map((step, i) => (
-                                    <div key={i} className="border-t-[3px] border-ocd-black pt-5 relative">
-                                        <div className="absolute -top-2 left-0 w-4 h-4 bg-ocd-black rounded-full"></div>
-                                        <div className="font-mono text-[12px] text-zinc-500 mb-2 mt-2 font-bold">Paso 0{i+1}</div>
-                                        <div className="font-bold text-[16px] mb-2.5 uppercase tracking-tight">{step.t}</div>
-                                        <div className="text-[14px] text-zinc-600 leading-relaxed font-medium">{step.d}</div>
-                                    </div>
-                                ))}
+                            <div className="space-y-4">
+                                {PHASES.map((phase) => {
+                                    const selectedInPhase = phase.items.filter(i => selectedItems.has(i.id));
+                                    const phasePrice = selectedInPhase.reduce((acc, curr) => acc + (curr.priceOverride !== undefined ? curr.priceOverride : curr.hours * BASE_RATE), 0);
+                                    const isAllSelected = selectedInPhase.length === phase.items.length;
+                                    const isExpanded = expandedPhases.has(phase.id);
+
+                                    return (
+                                        <div key={phase.id} className="w-full border border-ocd-border rounded-xl overflow-hidden shadow-sm">
+                                            <div 
+                                                className="w-full flex justify-between items-center bg-ocd-gray px-5 py-4 no-print select-none cursor-pointer active:bg-zinc-200 transition-colors"
+                                                onClick={() => togglePhase(phase.id)}
+                                            >
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                                    </div>
+                                                    <div className="font-bold text-ocd-black text-[14px] uppercase tracking-wide leading-none">{phase.title}</div>
+                                                    <span className={`font-mono text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-tighter ${phase.color}`}>{phase.tag}</span>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                    <div className="font-mono text-[13px] text-ocd-textMuted font-bold">{fCLP(phasePrice)}</div>
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const next = new Set(selectedItems);
+                                                            phase.items.forEach(item => { if (isAllSelected) next.delete(item.id); else next.add(item.id); });
+                                                            setSelectedItems(next);
+                                                        }}
+                                                        className={`w-6 h-6 rounded border flex items-center justify-center shrink-0 transition-all active:scale-90 ${isAllSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-400 bg-white'}`}
+                                                    >
+                                                        {isAllSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-[10px] md:h-[10px]"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            {isExpanded && (
+                                                <div className="border-t border-ocd-border bg-white divide-y divide-gray-100 animate-fade-in">
+                                                    <div className="hidden md:grid grid-cols-12 gap-4 bg-ocd-black text-white px-5 py-3 font-mono text-[10px] font-bold uppercase tracking-widest">
+                                                        <div className="col-span-4">Servicio</div>
+                                                        <div className="col-span-6">Detalle de entregable</div>
+                                                        <div className="col-span-2 text-right">Inversión</div>
+                                                    </div>
+                                                    {phase.items.map(item => {
+                                                        const isSelected = selectedItems.has(item.id);
+                                                        const price = item.priceOverride !== undefined ? item.priceOverride : item.hours * BASE_RATE;
+                                                        return (
+                                                            <div key={item.id} onClick={() => toggleItem(item.id)} className={`p-5 md:p-3 grid grid-cols-1 md:grid-cols-12 gap-4 cursor-pointer transition-colors active:bg-green-50 ${isSelected ? 'hover:bg-green-50' : 'opacity-40 grayscale print:hidden'}`}>
+                                                                <div className="md:col-span-4 flex items-start gap-4">
+                                                                    <div className={`no-print w-5 h-5 rounded-sm border flex items-center justify-center shrink-0 mt-0.5 transition-all ${isSelected ? 'bg-ocd-green border-ocd-green text-black scale-100' : 'border-gray-300 scale-95'}`}>
+                                                                        {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-2 md:h-2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                                    </div>
+                                                                    <span className="font-bold md:font-medium text-ocd-black text-[15px] md:text-sm leading-tight">{item.name}{item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}</span>
+                                                                </div>
+                                                                <div className="md:col-span-6 pl-10 md:pl-0 text-[14px] md:text-xs text-gray-500 leading-snug">{item.desc}</div>
+                                                                <div className="md:col-span-2 pl-10 md:pl-0 text-left md:text-right font-mono text-[13px] md:text-xs text-ocd-textMuted font-bold uppercase">
+                                                                    <span className="md:hidden text-zinc-400 mr-2">Inversión:</span>{price > 0 ? fCLP(price) : 'Cortesía'}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {/* SECCIÓN DE PAGO - RUTAS DIFERENCIALES */}
-                        <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[3rem] overflow-hidden relative no-print pb-14 z-10">
+                        {/* SECCIÓN DE PAGO - CONTRASTE ELEVADO & RESUMEN INTEGRADO */}
+                        <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[2.5rem] overflow-hidden relative no-print pb-14 z-10">
                             <div className="relative z-20">
                                 <div className="p-10 md:p-14 flex flex-col items-center text-center">
                                     <span className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-6 flex items-center gap-2.5">
                                         <div className="w-2 h-2 bg-ocd-green rounded-full"></div> Activación & Acceso
                                     </span>
-                                    <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase mb-5 leading-none">Selecciona tu Ruta</h3>
+                                    <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase mb-5 leading-none">Cerrar Propuesta</h3>
                                     <p className="text-[14px] md:text-[15px] text-zinc-400 max-w-xl leading-relaxed font-medium">
-                                        Elige el esquema de financiamiento que mejor se adapte a tu flujo de caja. Al confirmar, daremos luz verde oficial.
+                                        Revisa tu selección final y elige la estructura de financiamiento que mejor se adapte a tu flujo de caja.
                                     </p>
                                 </div>
                                 
+                                {/* RESUMEN DE COMPRA INTEGRADO (NUEVO) */}
+                                <div className="mx-6 md:mx-14 mb-10 p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800">
+                                    <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                                        <h4 className="font-mono text-xs font-bold text-zinc-400 uppercase tracking-widest">Resumen del Plan Personalizado</h4>
+                                        <span className="text-xs font-bold bg-white/10 px-2 py-1 rounded text-white">{stats.count} servicios</span>
+                                    </div>
+                                    
+                                    <div className="space-y-4 mb-8">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-zinc-500 font-mono uppercase tracking-wide">Inversión Nominal</span>
+                                            <span className="text-white font-mono">{fCLP(stats.rawTotal)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm italic">
+                                            <span className="text-ocd-green font-mono uppercase tracking-wide">Open Ticket Benefit (-20%)</span>
+                                            <span className="text-ocd-green font-mono">-{fCLP(stats.discount)}</span>
+                                        </div>
+                                        <div className="h-px bg-white/10 my-4"></div>
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-xs text-zinc-400 font-mono uppercase tracking-widest font-bold mb-1">Inversión Final Neta</span>
+                                            <span className="text-5xl font-black text-white tracking-tighter leading-none">{fCLP(stats.final)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="px-6 md:px-14 flex flex-col gap-6 items-stretch mb-12 relative z-[30]">
                                     {/* Protocolo Bifásico */}
                                     <button 
                                         type="button"
                                         onClick={() => setSelectedPlan('01')} 
-                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2.5rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '01' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
+                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '01' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full">
                                             <div className="flex items-center gap-5">
@@ -600,7 +510,7 @@
                                                 </div>
                                                 <div>
                                                     <span className={`block font-bold text-[22px] leading-none mb-2 ${selectedPlan === '02' ? 'text-ocd-green' : 'text-zinc-400'}`}>Estructura Trifásica (30/30/40)</span>
-                                                    <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase italic">Hitos: Inicio (30%) / Concepto (30%) / Entrega (40%)</span>
+                                                    <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase italic">Activación (30%) / Concepto (30%) / Entrega (40%)</span>
                                                 </div>
                                             </div>
                                             <div className="text-left sm:text-right border-t border-[#333] sm:border-transparent pt-5 sm:pt-0 mt-2 sm:mt-0 flex flex-col">
@@ -615,7 +525,7 @@
                                     <div className="space-y-4">
                                         <div className="bg-[#111] p-8 rounded-3xl border border-zinc-800">
                                             <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block">Banca / Recepción</span>
-                                            <div className="text-[15px] text-zinc-400 space-y-2 font-mono">
+                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono">
                                                 <strong className="text-white block mb-4 font-sans text-xl tracking-tight leading-none">Javiera Saint-Jour</strong>
                                                 <span className="block">RUT: 18.445.291-K</span>
                                                 <span className="block">Scotiabank — Cta. Corriente</span>
@@ -627,14 +537,14 @@
                                     </div>
 
                                     <div className="space-y-6 h-full flex flex-col justify-center">
-                                        <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl">
+                                        <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl h-full flex flex-col justify-center">
                                             <p className="text-[13px] text-zinc-400 leading-relaxed mb-8">Una vez realizado el abono, descarga el PDF y notifícanos para iniciar la fase operativa.</p>
                                             <div className="flex flex-col gap-4">
-                                                <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:bg-zinc-200 transition-all active:scale-95 active:opacity-70 flex justify-center items-center gap-3 touch-manipulation ${isExporting ? 'opacity-50' : ''}`}>
+                                                <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 active:scale-95 active:opacity-70 flex justify-center items-center gap-3 transition-all ${isExporting ? 'opacity-50' : ''}`}>
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                     {isExporting ? 'Procesando...' : '1. Descargar PDF'}
                                                 </button>
-                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-3 active:opacity-80 touch-manipulation shadow-[0_0_30px_rgba(74,222,128,0.2)]">
+                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 active:opacity-70 flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(74,222,128,0.2)]">
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                                                     2. Notificar vía WhatsApp
                                                 </button>
@@ -666,14 +576,14 @@
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Manual de marca (Guía Técnica)</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Archivos de producción final</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
                                     </div>
                                 </li>
                             </ul>
@@ -711,7 +621,7 @@
                             {/* Bloque Central: Version Tracking */}
                             <div className="order-3 md:order-2 flex flex-col items-center relative z-10">
                                 <div className="font-mono text-[10px] text-zinc-400 tracking-[0.2em] uppercase font-bold bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full border border-zinc-100 shadow-sm">
-                                    Open Club System v.59.0
+                                    Open Club System v.60.0
                                 </div>
                             </div>
 
