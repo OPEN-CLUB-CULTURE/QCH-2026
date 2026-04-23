@@ -76,6 +76,17 @@
             }
         }
 
+        /* Estabilizador de PDF: Asegura colores y layout extendido para captura 3K */
+        .exporting-pdf {
+            width: 800px !important; 
+            max-width: 800px !important;
+            padding: 50px !important;
+            box-shadow: none !important;
+            transform: none !important;
+            background: white !important;
+            color: #050505 !important;
+        }
+
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4ADE80; border-radius: 10px; }
 
@@ -128,7 +139,7 @@
                         const x = center + (radius + 28) * Math.sin(i * angleStep);
                         const y = center - (radius + 20) * Math.cos(i * angleStep);
                         return (
-                            <text key={i} x={x} y={y} textAnchor="middle" fill="#656568" className="font-mono text-[7px] font-bold uppercase tracking-tighter text-[8px]">
+                            <text key={i} x={x} y={y} textAnchor="middle" fill="#656568" className="font-mono text-[7px] font-bold uppercase tracking-tighter">
                                 {d.axis}
                             </text>
                         );
@@ -238,16 +249,20 @@
                 setIsExporting(true);
                 
                 const element = document.querySelector('.a4-page');
+                const originalStyle = element.getAttribute('style');
+
+                // Estabilización para captura de alta resolución
+                element.classList.add('exporting-pdf');
                 
-                // Esperar para que cualquier estado de UI se estabilice
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 600));
 
                 try {
                     const canvas = await html2canvas(element, {
-                        scale: 2.5,
+                        scale: 3, // Máxima calidad
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false,
+                        windowWidth: 800,
                         scrollY: -window.scrollY
                     });
                     
@@ -261,11 +276,12 @@
                         format: [imgWidth, pageHeight]
                     });
                     
-                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight);
-                    pdf.save(`Propuesta_Queenchis_OCD.pdf`);
+                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight, undefined, 'FAST');
+                    pdf.save(`Propuesta_Cotizacion_Queenchis_OCD.pdf`);
                 } catch (err) { 
                     console.error('PDF Export Failed:', err); 
                 } finally {
+                    element.classList.remove('exporting-pdf');
                     setIsExporting(false);
                 }
             };
@@ -439,65 +455,65 @@
                             </div>
                         </div>
 
-                        {/* HANDOFF SECCIÓN (RE-UBICADA) */}
-                        <div className="mb-14 px-2 md:px-0">
-                            <div className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-3 font-mono">/// Handoff</div>
-                            <h3 className="text-3xl font-black text-ocd-black mb-8 border-b border-ocd-border pb-3 uppercase tracking-tighter font-sans">Entregables finales</h3>
+                        {/* HANDOFF SECCIÓN */}
+                        <div className="mb-14 px-2 md:px-0 border-t border-zinc-100 pt-10">
+                            <div className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-3">/// Handoff Protocol</div>
+                            <h3 className="text-3xl font-black text-ocd-black mb-8 uppercase tracking-tighter">Entregables finales</h3>
                             <ul className="space-y-10">
                                 <li className="flex items-start gap-5">
-                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                                    <div className="text-ocd-green mt-1 shrink-0 bg-ocd-green/5 p-2 rounded-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
-                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Logotipo oficial (Master Files)</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG). Incluye variantes cromáticas y reducciones técnicas.</span>
+                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Logotipo oficial (Master Files)</strong>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG).</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
-                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                                    <div className="text-ocd-green mt-1 shrink-0 bg-ocd-green/5 p-2 rounded-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
-                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Manual de marca (Guía Técnica)</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
+                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Manual de marca (Guía Técnica)</strong>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), tipografías, iconografía y normas de aplicación para consistencia visual absoluta.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
-                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                                    <div className="text-ocd-green mt-1 shrink-0 bg-ocd-green/5 p-2 rounded-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
-                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Archivos de producción final</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
+                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Archivos de producción final</strong>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium font-medium">Documentos listos para envío directo a imprenta y proveedores (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
                                     </div>
                                 </li>
                             </ul>
                         </div>
 
                         {/* PROTOCOLO DE ACTIVACIÓN */}
-                        <div className="mb-14 p-8 bg-zinc-950 border border-zinc-800 rounded-[2rem] text-white">
+                        <div className="mb-14 p-8 bg-zinc-950 border border-zinc-800 rounded-[2.5rem] text-white">
                             <span className="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-4 block">/// Protocolo de Activación</span>
-                            <h3 className="text-xl font-black mb-8 uppercase tracking-tight">Pasos para iniciar el proyecto</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <h3 className="text-2xl font-black mb-8 uppercase tracking-tight">Pasos para iniciar el proyecto</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                                 {[
-                                    { id: '01', t: 'Personalizar', d: 'Confirma los servicios arriba según tus necesidades actuales.' },
-                                    { id: '02', t: 'Validar', d: 'Presiona el botón de aprobación para confirmar el acuerdo.' },
+                                    { id: '01', t: 'Personalizar', d: 'Confirma los servicios arriba seleccionando lo que necesitas.' },
+                                    { id: '02', t: 'Validar', d: 'Presiona el botón de aprobación para formalizar el acuerdo.' },
                                     { id: '03', t: 'Descargar', d: 'Obtén tu PDF oficial como registro de la orden de compra.' },
                                     { id: '04', t: 'Abonar', d: 'Realiza el abono correspondiente y notifica vía WhatsApp.' }
                                 ].map((step, i) => (
                                     <div key={i} className="flex flex-col gap-2 relative">
-                                        <span className="text-ocd-green font-mono text-xs font-black">{step.id}</span>
+                                        <span className="text-ocd-green font-mono text-sm font-black">{step.id}</span>
                                         <strong className="text-white text-xs uppercase tracking-widest">{step.t}</strong>
-                                        <p className="text-[11px] text-zinc-500 leading-snug">{step.d}</p>
+                                        <p className="text-[11px] text-zinc-400 leading-snug">{step.d}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* FIRMAS Y SELLO (CON ESPACIADO CORREGIDO PARA MOBILE) */}
+                        {/* FIRMAS Y SELLO (CON ESPACIADO CORREGIDO) */}
                         <div className="mt-24 md:mt-48 mb-14 flex flex-col md:flex-row justify-between items-center md:items-end gap-16 relative py-12 border-t border-b border-zinc-100">
                             
-                            {/* Bloque Izquierdo: Aprobación Cliente (Foco Destacado) */}
+                            {/* Bloque Izquierdo: Aprobación Cliente */}
                             <div className={`flex-1 w-full md:w-auto text-center md:text-left relative z-10 flex flex-col items-center md:items-start group p-6 rounded-3xl transition-all duration-500 border-2 ${isApproved ? 'bg-ocd-green/5 border-ocd-green shadow-xl' : 'bg-zinc-50 border-zinc-200 shadow-sm'}`}>
                                 <div className="mb-4 w-full relative flex justify-center md:justify-start items-end min-h-[80px]">
                                     <div className="absolute inset-0 flex items-center justify-center md:justify-start">
                                         <button 
                                             onClick={() => setIsApproved(!isApproved)}
-                                            className={`no-print px-6 py-3 rounded-full font-mono text-[11px] font-bold tracking-widest uppercase transition-all duration-500 border-2 ${isApproved ? 'bg-ocd-green text-black border-ocd-green scale-100' : 'bg-white text-zinc-500 border-zinc-300 hover:border-ocd-green hover:text-ocd-green hover:shadow-lg'}`}
+                                            className={`no-print px-6 py-3 rounded-full font-mono text-[11px] font-bold tracking-widest uppercase transition-all duration-500 border-2 ${isApproved ? 'bg-ocd-green text-black border-ocd-green scale-100 shadow-[0_0_15px_#4ADE80]' : 'bg-white text-zinc-500 border-zinc-300 hover:border-ocd-green hover:text-ocd-green hover:shadow-lg'}`}
                                         >
                                             {isApproved ? '✓ Contrato Validado' : 'Clic para Aprobar Propuesta'}
                                         </button>
@@ -526,7 +542,7 @@
                                             <textPath href="#sealPath" startOffset="0%" textLength="226" lengthAdjust="spacingAndGlyphs">• OPEN CLUB • AUTHORIZED • OPEN CLUB • AUTHORIZED </textPath>
                                         </text>
                                     </svg>
-                                    <div className="absolute inset-0 flex items-center justify-center font-black text-6xl tracking-tighter pt-1.5">O</div>
+                                    <div className="absolute inset-0 flex items-center justify-center font-black text-7xl tracking-tighter pt-1.5">O</div>
                                 </div>
 
                                 <div className="border-b-2 border-ocd-black mb-3 pb-8 md:pb-12 w-3/4 md:w-full text-ocd-green font-mono text-[13px] italic font-bold uppercase tracking-widest leading-none relative z-10">
@@ -542,36 +558,36 @@
                         </div>
 
                         {/* SECCIÓN DE PAGO (CHECKOUT) */}
-                        <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[3rem] overflow-hidden relative no-print pb-14 z-10">
+                        <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[3rem] overflow-hidden relative no-print pb-16 z-10">
                             <div className="relative z-20">
                                 <div className="p-10 md:p-14 flex flex-col items-center text-center">
                                     <span className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-6 flex items-center gap-2.5">
-                                        <div className="w-2 h-2 bg-ocd-green rounded-full"></div> Inversión & Liquidación
+                                        <div className="w-2 h-2 bg-ocd-green rounded-full animate-pulse"></div> Inversión & Liquidación
                                     </span>
                                     <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase mb-5 leading-none">Consolidado Final</h3>
                                 </div>
                                 
-                                {/* RESUMEN DE COMPRA INTEGRADO (FONDO BLANCO DIFERENCIAL) */}
-                                <div className="mx-6 md:mx-14 mb-10 p-8 rounded-3xl bg-white border border-zinc-200 shadow-xl overflow-hidden relative group">
-                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-ocd-green"></div>
-                                    <div className="flex justify-between items-center mb-6 border-b border-zinc-100 pb-4">
-                                        <h4 className="font-mono text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Resumen del Plan Detallado</h4>
-                                        <span className="text-[10px] font-bold bg-zinc-100 px-2 py-1 rounded text-zinc-600">{stats.count} servicios activos</span>
+                                {/* RESUMEN DE COMPRA INTEGRADO (FONDO BLANCO OCD) */}
+                                <div className="mx-6 md:mx-14 mb-10 p-10 rounded-[2.5rem] bg-white border border-zinc-200 shadow-2xl overflow-hidden relative group">
+                                    <div className="absolute top-0 left-0 w-2 h-full bg-ocd-green"></div>
+                                    <div className="flex justify-between items-center mb-8 border-b border-zinc-100 pb-5">
+                                        <h4 className="font-mono text-xs font-bold text-zinc-400 uppercase tracking-[0.2em]">Resumen del Plan Detallado</h4>
+                                        <span className="text-[10px] font-bold bg-zinc-100 px-3 py-1 rounded-full text-zinc-600 uppercase tracking-tighter">{stats.count} servicios activos</span>
                                     </div>
                                     
-                                    <div className="space-y-4 mb-8">
+                                    <div className="space-y-5 mb-10">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-zinc-500 font-mono uppercase tracking-wide text-xs">Inversión Nominal</span>
-                                            <span className="text-zinc-900 font-mono font-bold">{fCLP(stats.rawTotal)}</span>
+                                            <span className="text-zinc-500 font-mono uppercase tracking-widest text-[11px] font-bold">Inversión Nominal</span>
+                                            <span className="text-zinc-900 font-mono font-black">{fCLP(stats.rawTotal)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm italic">
-                                            <span className="text-ocd-green font-mono uppercase tracking-wide text-xs font-bold">Open Ticket Benefit (-20%)</span>
+                                            <span className="text-ocd-green font-mono uppercase tracking-widest text-[11px] font-black">Open Ticket Benefit (-20%)</span>
                                             <span className="text-ocd-green font-mono font-black">-{fCLP(stats.discount)}</span>
                                         </div>
-                                        <div className="h-px bg-zinc-100 my-4"></div>
-                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
-                                            <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-widest font-bold mb-1 leading-none">Inversión Final Neta</span>
-                                            <span className="text-2xl sm:text-4xl font-black text-zinc-900 tracking-tighter leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+                                        <div className="h-px bg-zinc-100 my-6"></div>
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+                                            <span className="text-[11px] text-zinc-400 font-mono uppercase tracking-[0.2em] font-bold mb-1 leading-none">Inversión Final Neta</span>
+                                            <span className="text-4xl sm:text-6xl font-black text-zinc-900 tracking-tighter leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
                                                 {fCLP(stats.final)}
                                             </span>
                                         </div>
@@ -587,10 +603,10 @@
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full">
                                             <div className="flex items-center gap-5">
                                                 <div className={`w-8 h-8 rounded-full border-4 flex items-center justify-center shrink-0 transition-all ${selectedPlan === '01' ? 'border-ocd-green' : 'border-zinc-700'}`}>
-                                                    {selectedPlan === '01' && <div className="w-3.5 h-3.5 bg-ocd-green rounded-full animate-fade-in"></div>}
+                                                    {selectedPlan === '01' && <div className="w-4 h-4 bg-ocd-green rounded-full animate-fade-in shadow-[0_0_10px_#4ADE80]"></div>}
                                                 </div>
                                                 <div>
-                                                    <span className={`block font-bold text-[20px] md:text-[22px] leading-none mb-2 ${selectedPlan === '01' ? 'text-ocd-green' : 'text-zinc-400'}`}>Protocolo Bifásico (50/50)</span>
+                                                    <span className={`block font-bold text-[22px] leading-none mb-2 ${selectedPlan === '01' ? 'text-ocd-green' : 'text-zinc-400'}`}>Protocolo Bifásico (50/50)</span>
                                                     <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase">Inicio (50%) / Cierre & Handoff (50%)</span>
                                                 </div>
                                             </div>
@@ -604,15 +620,15 @@
                                     <button 
                                         type="button"
                                         onClick={() => setSelectedPlan('02')} 
-                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2.5rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '02' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
+                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '02' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full">
                                             <div className="flex items-center gap-5">
                                                 <div className={`w-8 h-8 rounded-full border-4 flex items-center justify-center shrink-0 transition-all ${selectedPlan === '02' ? 'border-ocd-green' : 'border-zinc-700'}`}>
-                                                    {selectedPlan === '02' && <div className="w-3.5 h-3.5 bg-ocd-green rounded-full animate-fade-in"></div>}
+                                                    {selectedPlan === '02' && <div className="w-4 h-4 bg-ocd-green rounded-full animate-fade-in shadow-[0_0_10px_#4ADE80]"></div>}
                                                 </div>
                                                 <div>
-                                                    <span className={`block font-bold text-[20px] md:text-[22px] leading-none mb-2 ${selectedPlan === '02' ? 'text-ocd-green' : 'text-zinc-400'}`}>Estructura Trifásica (30/30/40)</span>
+                                                    <span className={`block font-bold text-[22px] leading-none mb-2 ${selectedPlan === '02' ? 'text-ocd-green' : 'text-zinc-400'}`}>Estructura Trifásica (30/30/40)</span>
                                                     <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase italic">Activación (30%) / Concepto (30%) / Entrega (40%)</span>
                                                 </div>
                                             </div>
@@ -628,7 +644,7 @@
                                     <div className="space-y-4">
                                         <div className="bg-[#111] p-8 rounded-3xl border border-zinc-800">
                                             <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block">Banca / Recepción</span>
-                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono">
+                                            <div className="text-[15px] text-zinc-400 space-y-2 font-mono">
                                                 <strong className="text-white block mb-4 font-sans text-xl tracking-tight leading-none">Javiera Saint-Jour</strong>
                                                 <span className="block">RUT: 18.445.291-K</span>
                                                 <span className="block">Scotiabank — Cta. Corriente</span>
@@ -636,18 +652,18 @@
                                                 <span className="block mt-4 text-zinc-300 font-bold">openclubdesign@gmail.com</span>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2">✶ Conversar ahora</button>
+                                        <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2 font-mono">✶ Conversar ahora</button>
                                     </div>
 
                                     <div className="space-y-6 h-full flex flex-col justify-center">
-                                        <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl h-full flex flex-col justify-center">
-                                            <p className="text-[13px] text-zinc-400 leading-relaxed mb-8 font-medium">Una vez realizado el abono, descarga el PDF y notifícanos para iniciar la fase operativa.</p>
+                                        <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl h-full flex flex-col justify-center shadow-inner">
+                                            <p className="text-[13px] text-zinc-400 leading-relaxed mb-8 font-medium">Una vez aprobado, descarga el PDF y notifícanos vía WhatsApp con el comprobante para iniciar operaciones.</p>
                                             <div className="flex flex-col gap-4">
-                                                <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 active:scale-95 active:opacity-70 flex justify-center items-center gap-3 transition-all ${isExporting ? 'opacity-50' : ''}`}>
+                                                <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 active:scale-95 active:opacity-70 flex justify-center items-center gap-3 transition-all shadow-xl ${isExporting ? 'opacity-50' : ''}`}>
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                     {isExporting ? 'Procesando...' : '1. Descargar PDF Oficial'}
                                                 </button>
-                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(74,222,128,0.2)]">
+                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(74,222,128,0.3)]">
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                                                     2. Notificar vía WhatsApp
                                                 </button>
@@ -658,7 +674,7 @@
 
                                 <div className="mt-16 text-center border-t border-zinc-800 pt-12">
                                     <span className="block text-white text-[14px] font-bold tracking-[0.2em] uppercase mb-3 font-mono">muchas gracias ♡</span>
-                                    <span className="block text-ocd-green text-3xl md:text-4xl font-black tracking-tighter italic drop-shadow-[0_0_12px_rgba(74,222,128,0.4)] font-sans">~✷♡♡ será hermoso ♡♡✷~</span>
+                                    <span className="block text-ocd-green text-3xl md:text-5xl font-black tracking-tighter italic drop-shadow-[0_0_12px_rgba(74,222,128,0.4)] font-sans">~✷♡♡ será hermoso ♡♡✷~</span>
                                 </div>
                             </div>
                         </div>
