@@ -76,19 +76,6 @@
             }
         }
 
-        /* Estabilizador de PDF: Asegura colores y layout extendido */
-        .exporting-pdf {
-            width: 800px !important; 
-            max-width: 800px !important;
-            padding: 40px !important;
-            box-shadow: none !important;
-            transform: none !important;
-            background: white !important;
-            position: absolute !important;
-            left: -9999px !important;
-            top: 0 !important;
-        }
-
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4ADE80; border-radius: 10px; }
 
@@ -166,7 +153,7 @@
                     { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico del proyecto (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
                     { id: 'f1_1', name: 'Logo principal + sistema visual', desc: 'Desarrollo de 2 direcciones gráficas estratégicas y versiones oficiales.', hours: 14.0, days: 5, isEssential: true },
                     { id: 'f1_2', name: 'Manual de marca', desc: 'Guía técnica integral que consolida paleta de colores, familia tipográfica y normas de uso.', hours: 5.0, days: 2, priceOverride: 100000, isEssential: true },
-                    { id: 'f1_3', name: 'Señalética física (2 piezas)', desc: 'Diseño técnico de 2 piezas para el local. Ej: Letrero fachada, pizarras de menú, vinilos o señalética interior.', hours: 4.0, days: 2, isEssential: true },
+                    { id: 'f1_3', name: 'Señalética física (1 pieza)', desc: 'Diseño técnico de 1 pieza clave para el local. Ej: Letrero de fachada o pizarras de menú.', hours: 2.0, days: 2, priceOverride: 50000, isEssential: true },
                     { id: 'f1_4', name: 'Diseño de menú base', desc: 'Diseño de 1 ejemplar maestro de carta adaptable. Arquitectura de contenido estratégica.', hours: 6.0, days: 3, isEssential: true }
                 ]
             },
@@ -249,40 +236,44 @@
             const handleDownloadPDF = async () => {
                 if (isExporting) return;
                 setIsExporting(true);
-                const currentScroll = window.scrollY; 
-                window.scrollTo(0, 0); 
+                
+                const element = document.querySelector('.a4-page');
+                const originalStyle = element.getAttribute('style');
 
-                setTimeout(async () => {
-                    try {
-                        const element = document.querySelector('.a4-page');
-                        const canvas = await html2canvas(element, {
-                            scale: 3, // Calidad superior
-                            useCORS: true,
-                            backgroundColor: '#ffffff',
-                            logging: false,
-                            scrollY: -window.scrollY,
-                            windowWidth: 800 // Fuerza renderizado desktop para evitar saltos
-                        });
-                        
-                        const imgData = canvas.toDataURL('image/png', 1.0);
-                        const imgWidth = 210; 
-                        const pageHeight = (canvas.height * imgWidth) / canvas.width;
-                        
-                        const pdf = new jspdf.jsPDF({
-                            orientation: 'p',
-                            unit: 'mm',
-                            format: [imgWidth, pageHeight]
-                        });
-                        
-                        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight);
-                        pdf.save(`Propuesta_Cotizacion_Queenchis_OCD.pdf`);
-                    } catch (err) { 
-                        console.error('PDF Error:', err); 
-                    } finally {
-                        window.scrollTo(0, currentScroll); 
-                        setIsExporting(false);
-                    }
-                }, 500);
+                // Asegurar ancho desktop para captura perfecta
+                element.style.width = '800px';
+                element.style.maxWidth = '800px';
+                
+                await new Promise(r => setTimeout(r, 600));
+
+                try {
+                    const canvas = await html2canvas(element, {
+                        scale: 3,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        windowWidth: 800,
+                        scrollY: -window.scrollY
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    const imgWidth = 210; 
+                    const pageHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    const pdf = new jspdf.jsPDF({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: [imgWidth, pageHeight]
+                    });
+                    
+                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight);
+                    pdf.save(`Propuesta_Cotizacion_Queenchis_OCD.pdf`);
+                } catch (err) { 
+                    console.error('PDF Export Failed:', err); 
+                } finally {
+                    element.setAttribute('style', originalStyle || '');
+                    setIsExporting(false);
+                }
             };
 
             const handleWhatsApp = (type = 'payment') => {
@@ -454,30 +445,30 @@
                             </div>
                         </div>
 
-                        {/* PROTOCOLO DE ACTIVACIÓN (NUEVA UBICACIÓN) */}
-                        <div className="mb-14 p-8 bg-zinc-50 border border-zinc-200 rounded-[2rem]">
+                        {/* PROTOCOLO DE ACTIVACIÓN */}
+                        <div className="mb-14 p-8 bg-zinc-950 border border-zinc-800 rounded-[2rem] text-white">
                             <span className="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-4 block">/// Protocolo de Activación</span>
-                            <h3 className="text-xl font-black text-ocd-black mb-8 uppercase tracking-tight">Pasos para iniciar el servicio</h3>
+                            <h3 className="text-xl font-black mb-8 uppercase tracking-tight">Pasos para iniciar el proyecto</h3>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {[
-                                    { id: '01', t: 'Personalizar', d: 'Confirma los servicios arriba.' },
-                                    { id: '02', t: 'Validar', d: 'Presiona el botón de aprobación.' },
-                                    { id: '03', t: 'Descargar', d: 'Obtén tu PDF oficial de registro.' },
-                                    { id: '04', t: 'Abonar', d: 'Inicia el proyecto vía transferencia.' }
+                                    { id: '01', t: 'Personalizar', d: 'Confirma los servicios arriba según tus necesidades actuales.' },
+                                    { id: '02', t: 'Validar', d: 'Presiona el botón de aprobación para confirmar el acuerdo.' },
+                                    { id: '03', t: 'Descargar', d: 'Obtén tu PDF oficial como registro de la orden de compra.' },
+                                    { id: '04', t: 'Abonar', d: 'Realiza el abono correspondiente y notifica vía WhatsApp.' }
                                 ].map((step, i) => (
                                     <div key={i} className="flex flex-col gap-2 relative">
                                         <span className="text-ocd-green font-mono text-xs font-black">{step.id}</span>
-                                        <strong className="text-zinc-900 text-xs uppercase tracking-widest">{step.t}</strong>
+                                        <strong className="text-white text-xs uppercase tracking-widest">{step.t}</strong>
                                         <p className="text-[11px] text-zinc-500 leading-snug">{step.d}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* FIRMAS Y SELLO (UBICACIÓN ESTRATÉGICA) */}
-                        <div className="mt-14 mb-14 flex flex-col md:flex-row justify-between items-center md:items-end gap-12 relative py-12 border-t border-b border-zinc-100">
+                        {/* FIRMAS Y SELLO (CON ESPACIADO CORREGIDO PARA MOBILE) */}
+                        <div className="mt-64 md:mt-48 mb-14 flex flex-col md:flex-row justify-between items-center md:items-end gap-16 relative py-12 border-t border-zinc-100">
                             
-                            {/* Bloque Izquierdo: Aprobación Cliente (Interactivo & Destacado) */}
+                            {/* Bloque Izquierdo: Aprobación Cliente (Foco Destacado) */}
                             <div className={`flex-1 w-full md:w-auto text-center md:text-left relative z-10 flex flex-col items-center md:items-start group p-6 rounded-3xl transition-all duration-500 border-2 ${isApproved ? 'bg-ocd-green/5 border-ocd-green shadow-xl' : 'bg-zinc-50 border-zinc-200 shadow-sm'}`}>
                                 <div className="mb-4 w-full relative flex justify-center md:justify-start items-end min-h-[80px]">
                                     <div className="absolute inset-0 flex items-center justify-center md:justify-start">
@@ -488,7 +479,7 @@
                                             {isApproved ? '✓ Contrato Validado' : 'Clic para Aprobar Propuesta'}
                                         </button>
                                         
-                                        {/* Sello de Aprobación Visual (Visible en PDF si está activo) */}
+                                        {/* Sello de Aprobación Visual */}
                                         {isApproved && (
                                             <div className="absolute top-[-50px] left-0 animate-fade-in pointer-events-none">
                                                 <div className="border-4 border-ocd-green text-ocd-green font-black px-5 py-2 text-3xl rotate-[-15deg] opacity-70">
@@ -505,7 +496,7 @@
 
                             {/* Bloque Derecho: Firma Dirección (Con Sello Giratorio) */}
                             <div className="flex-1 w-full md:w-auto text-center md:text-right relative z-10 flex flex-col items-center md:items-end group">
-                                <div className="absolute top-[-110px] md:top-[-130px] right-1/2 translate-x-1/2 md:translate-x-0 md:right-0 w-36 h-36 md:w-48 h-48 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
+                                <div className="absolute top-[-120px] md:top-[-130px] right-1/2 translate-x-1/2 md:translate-x-0 md:right-0 w-36 h-36 md:w-48 h-48 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
                                     <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_15s_linear_infinite]">
                                         <defs><path id="sealPath" d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0" /></defs>
                                         <text fontSize="10" fontWeight="bold" fill="currentColor" className="font-mono uppercase tracking-widest">
@@ -534,7 +525,7 @@
                                     <span className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-6 flex items-center gap-2.5">
                                         <div className="w-2 h-2 bg-ocd-green rounded-full"></div> Inversión & Liquidación
                                     </span>
-                                    <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase mb-5 leading-none">Checkout Final</h3>
+                                    <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase mb-5 leading-none">Consolidado Final</h3>
                                 </div>
                                 
                                 {/* RESUMEN DE COMPRA INTEGRADO (FONDO BLANCO DIFERENCIAL) */}
