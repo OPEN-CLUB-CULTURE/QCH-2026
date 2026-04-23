@@ -305,13 +305,15 @@
                 ];
             }, [selectedItems]);
 
-            // PASO 1: Descargar PDF (Aislado)
+            // PASO 1: Descargar PDF (Aislado con protección de Scroll)
             const handleDownloadPDF = async () => {
                 setIsExporting(true);
                 setIsCartOpen(false);
                 
+                const currentScroll = window.scrollY; // Guardamos la posición actual
+                
                 setTimeout(async () => {
-                    window.scrollTo(0, 0); 
+                    window.scrollTo(0, 0); // Scroll temporal para que html2canvas no corte la hoja
                     const element = document.querySelector('.a4-page');
                     try {
                         const canvas = await html2canvas(element, {
@@ -337,6 +339,7 @@
                         console.error('Error al exportar PDF:', err);
                         window.print(); 
                     } finally {
+                        window.scrollTo(0, currentScroll); // Devolvemos al usuario a donde estaba
                         setIsExporting(false);
                     }
                 }, 100);
@@ -345,10 +348,9 @@
             // PASO 2: Enviar a WhatsApp
             const handleWhatsApp = () => {
                 const planAbono = selectedPlan === 'A' ? stats.final * 0.5 : stats.final * 0.3;
-                const text = `¡Hola Yi! 👋\n\nTe confirmo que avanzaremos con el *Plan ${selectedPlan}* de la propuesta.\n\nAquí te adjunto el PDF de la propuesta y el comprobante de transferencia por el abono inicial de ${fCLP(planAbono)}.\n\n(Mis datos para la boleta: RUT, Nombres, Domicilio, Comuna).\n\n¡Quedo atenta/o!`;
+                const text = `¡Hola Yi! ✶ Te confirmo que avanzaremos con el *Plan ${selectedPlan}* de la propuesta. Aquí te adjunto el PDF de la propuesta y el comprobante de transferencia por el abono inicial de ${fCLP(planAbono)}. (Mis datos para la boleta: RUT, Nombres, Domicilio, Comuna). Gracias, ¡Hablamos!`;
                 
                 const encodedText = encodeURIComponent(text);
-                // NOTA: Si prefieres que el link vaya directo a tu número, cambia la url a: `https://wa.me/569XXXXXXXX?text=${encodedText}`
                 window.open(`https://wa.me/?text=${encodedText}`, '_blank');
             };
 
@@ -695,7 +697,8 @@
                                         <div className="bg-ocd-green/10 border border-ocd-green/20 p-5 rounded-2xl text-center flex flex-col items-center justify-center">
                                             <p className="text-[11px] md:text-xs text-zinc-300 leading-relaxed">
                                                 * Por favor, envíame en WhatsApp el <strong>PDF descargado</strong> y el <strong>comprobante de transferencia</strong>.<br/><br/>
-                                                ¿Tienes dudas o necesitas ajustar algún detalle? <strong className="text-white">Escríbeme y lo conversamos.</strong> ¡Estoy aquí para ayudarte!
+                                                ¿Tienes dudas o necesitas ajustar algún detalle? <strong className="text-white">✶ Conversemos!</strong><br/><br/>
+                                                <span className="text-ocd-green font-medium">muchas gracias ♡♡♡✷~ será hermoso</span>
                                             </p>
                                         </div>
                                     </div>
@@ -764,7 +767,7 @@
                                 <div className="font-bold text-ocd-black uppercase text-[9px] md:text-[10px] tracking-widest font-sans">Aprobación Cliente</div>
                             </div>
                             <div className="text-center order-3 md:order-2 w-full md:w-auto relative z-10">
-                                <div className="font-mono text-[8px] md:text-[9px] text-zinc-400 tracking-[0.2em] uppercase font-bold bg-white/80 backdrop-blur-sm px-3 py-1 rounded">Open Club System v.38.0</div>
+                                <div className="font-mono text-[8px] md:text-[9px] text-zinc-400 tracking-[0.2em] uppercase font-bold bg-white/80 backdrop-blur-sm px-3 py-1 rounded">Open Club System v.39.0</div>
                             </div>
                             <div className="w-full md:w-64 text-center md:text-right order-1 md:order-3 relative z-10">
                                 <div className="border-b border-black mb-2 pb-6 md:pb-10 w-3/4 mx-auto md:w-full md:ml-auto text-ocd-green font-mono text-[10px] md:text-[11px] italic font-bold uppercase">Auth_YI_Director</div>
