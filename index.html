@@ -61,6 +61,7 @@
             padding-bottom: 8rem;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
             position: relative; 
+            z-index: 10;
         }
 
         @media (min-width: 768px) {
@@ -75,63 +76,65 @@
             }
         }
 
+        /* Estabilizador de PDF: Fuerza layout A4 durante la captura */
         .exporting-pdf {
-            width: 210mm !important;
-            max-width: 210mm !important;
-            padding: 20mm !important;
+            width: 794px !important; /* 210mm aproximado */
+            max-width: 794px !important;
+            padding: 40px !important;
             box-shadow: none !important;
+            transform: none !important;
         }
 
         .quick-cart {
             position: fixed;
-            bottom: 20px;
+            bottom: 25px;
             right: 20px;
-            z-index: 100;
+            z-index: 9999; /* Máxima prioridad sobre cualquier capa */
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             font-family: 'Inter', sans-serif;
-            pointer-events: none;
+            pointer-events: none; /* Evita interferencia con scroll */
         }
         
         .cart-bubble, .cart-dropdown {
-            pointer-events: auto;
+            pointer-events: auto; /* Permite clics solo en el botón y dropdown */
         }
 
         .cart-bubble {
             background: #050505;
             color: white;
-            padding: 14px 24px;
+            padding: 16px 28px;
             border-radius: 100px;
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 15px 35px -5px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             user-select: none;
         }
         
         @media (hover: hover) {
-            .cart-bubble:hover { transform: scale(1.05); border-color: #4ADE80; }
+            .cart-bubble:hover { transform: translateY(-4px) scale(1.02); border-color: #4ADE80; }
         }
         
-        .cart-bubble:active { transform: scale(0.92); opacity: 0.8; }
+        .cart-bubble:active { transform: scale(0.95); opacity: 0.9; }
         
         .cart-dropdown {
             width: calc(100vw - 40px);
-            max-width: 400px;
+            max-width: 380px;
             background: #111113; 
-            border-radius: 28px;
-            padding: 24px;
-            margin-bottom: 12px;
-            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 32px;
+            padding: 28px;
+            margin-bottom: 16px;
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.9);
+            border: 1px solid rgba(255,255,255,0.1);
             color: white;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(20px);
+            transform: translateY(30px);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             max-height: 80vh;
             display: flex;
@@ -166,6 +169,7 @@
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
 
+        // Componente RadarChart definido fuera para evitar errores de referencia
         function RadarChart({ data }) {
             const points = data.length;
             const radius = 68; 
@@ -216,10 +220,10 @@
                 tag: 'NECESARIA',
                 color: 'bg-ocd-green text-black font-bold',
                 items: [
-                    { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
+                    { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico del proyecto (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
                     { id: 'f1_1', name: 'Logo principal + sistema visual', desc: 'Desarrollo de 2 direcciones gráficas estratégicas y versiones oficiales.', hours: 14.0, days: 5, isEssential: true },
                     { id: 'f1_2', name: 'Manual de marca', desc: 'Guía técnica integral de paleta, tipografía y normas de uso.', hours: 5.0, days: 2, priceOverride: 100000, isEssential: true },
-                    { id: 'f1_3', name: 'Señalética física', desc: 'Diseño técnico de señalización para el local físico (letrero o pizarras).', hours: 4.0, days: 2, isEssential: true },
+                    { id: 'f1_3', name: 'Señalética física', desc: 'Diseño técnico de señalización para el local físico (ej. letrero de fachada o pizarras).', hours: 4.0, days: 2, isEssential: true },
                     { id: 'f1_4', name: 'Diseño de menú base', desc: 'Diseño de 1 ejemplar maestro de carta adaptable estratégica.', hours: 6.0, days: 3, isEssential: true }
                 ]
             },
@@ -233,7 +237,7 @@
                     { id: 'f2_pap', name: 'Papelería corporativa', desc: 'Diseño para pieza impresa (flyers, tarjetas o posters).', hours: 3.5, days: 2, priceOverride: 50000 },
                     { id: 'f2_m', name: 'Ilustración / Mascot creation', desc: 'Desarrollo de personaje o mascota animada en 3 poses.', hours: 8.0, days: 4, priceOverride: 50000 },
                     { id: 'f2_p', name: 'Dirección creativa para campaña', desc: 'Conceptos visuales y narrativa para lanzamiento y redes sociales.', hours: 6.0, days: 3 },
-                    { id: 'f2_f', name: 'Reunión: Presentación final', desc: 'Cierre de etapa de diseño y entrega de activos (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0 }
+                    { id: 'f2_f', name: 'Reunión: Presentación final', desc: 'Cierre de etapa de diseño y entrega oficial de activos (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0 }
                 ]
             },
             {
@@ -242,11 +246,11 @@
                 tag: 'OPCIONAL',
                 color: 'bg-zinc-100 text-zinc-500',
                 items: [
-                    { id: 'f3_1', name: 'Landing page (UI o HTML)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML.', hours: 25.0, days: 10 },
-                    { id: 'f3_2', name: '12 Plantillas editables RRSS', desc: 'Set de 12 plantillas maestras a elección (Posts o Stories).', hours: 6.5, days: 3 },
-                    { id: 'm_base', name: 'Merch / Diseño base', desc: 'Aplicación simple en indumentaria (delantales o tote bags).', hours: 2.5, days: 2, priceOverride: 50000 },
+                    { id: 'f3_1', name: 'Landing page (UI o HTML)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML listo para web.', hours: 25.0, days: 10 },
+                    { id: 'f3_2', name: '12 Plantillas editables RRSS', desc: 'Set de 12 plantillas maestras a elección del cliente (Posts o Stories).', hours: 6.5, days: 3 },
+                    { id: 'm_base', name: 'Merch / Diseño base', desc: 'Aplicación simple en indumentaria (delantales, gorras o tote bags).', hours: 2.5, days: 2, priceOverride: 50000 },
                     { id: 'm_complex', name: 'Merch / Diseño ilustrado', desc: 'Arte a gran escala aplicada a soportes textiles premium.', hours: 5.5, days: 4, priceOverride: 100000 },
-                    { id: 'cons_1', name: 'Consultoría estratégica', desc: 'Asesoría técnica para decisiones tácticas o expansivas.', hours: 1.0, days: 0, priceOverride: 50000 }
+                    { id: 'cons_1', name: 'Consultoría estratégica', desc: 'Asesoría técnica para la toma de decisiones tácticas o expansivas.', hours: 1.0, days: 0, priceOverride: 50000 }
                 ]
             }
         ];
@@ -255,10 +259,11 @@
             const [selectedItems, setSelectedItems] = useState(new Set([
                 'f1_0', 'f1_1', 'f1_2', 'f1_3', 'f1_4', 'f2_1', 'f2_pap', 'm_base', 'f2_f'
             ]));
-            const [expandedPhases, setExpandedPhases] = useState(new Set(['f1', 'f2', 'f3'])); // Fase 3 abierta por defecto
+            const [expandedPhases, setExpandedPhases] = useState(new Set(['f1', 'f2', 'f3'])); 
             const [isExporting, setIsExporting] = useState(false);
             const [isCartOpen, setIsCartOpen] = useState(false);
             const [selectedPlan, setSelectedPlan] = useState('01'); 
+            const [isApproved, setIsApproved] = useState(false);
 
             const toggleItem = (id) => {
                 const next = new Set(selectedItems);
@@ -301,6 +306,7 @@
                 setIsExporting(true);
                 setIsCartOpen(false);
                 const currentScroll = window.scrollY; 
+                
                 const element = document.querySelector('.a4-page');
                 element.classList.add('exporting-pdf');
                 window.scrollTo(0, 0); 
@@ -308,27 +314,33 @@
                 setTimeout(async () => {
                     try {
                         const canvas = await html2canvas(element, {
-                            scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0, height: element.scrollHeight, width: 794 
+                            scale: 3, // Alta calidad
+                            useCORS: true,
+                            backgroundColor: '#ffffff',
+                            scrollY: 0,
+                            height: element.scrollHeight,
+                            width: 794 // Fuerza ancho A4
                         });
-                        const imgData = canvas.toDataURL('image/png');
+                        const imgData = canvas.toDataURL('image/png', 1.0);
                         const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
                         const pdfWidth = pdf.internal.pageSize.getWidth();
                         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
                         pdf.save(`Propuesta_Queenchis_Ruta${selectedPlan}.pdf`);
-                    } catch (err) { console.error('PDF Error:', err); }
-                    finally {
+                    } catch (err) { 
+                        console.error('PDF Error:', err); 
+                    } finally {
                         element.classList.remove('exporting-pdf');
                         window.scrollTo(0, currentScroll); 
                         setIsExporting(false);
                     }
-                }, 400);
+                }, 600);
             };
 
             const handleWhatsApp = (type = 'payment') => {
                 const planText = selectedPlan === '01' ? 'Protocolo Bifásico (50/50)' : 'Estructura Trifásica (30/30/40)';
                 const paymentAmount = selectedPlan === '01' ? abonoA : abonoB;
-                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta. Aquí te adjunto el PDF y el comprobante por el abono de ${fCLP(paymentAmount)}. (Mis datos: RUT, Nombres, Domicilio, Comuna). Gracias!`;
+                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta. Aquí te adjunto el PDF de la propuesta y el comprobante por el abono inicial de ${fCLP(paymentAmount)}. Gracias!`;
                 const helpMsg = `¡Hola Yi! ✶ Tengo algunas dudas sobre la propuesta, ¿podemos conversar?`;
                 const text = type === 'payment' ? paymentMsg : helpMsg;
                 window.location.assign(`https://api.whatsapp.com/send?phone=56949873116&text=${encodeURIComponent(text)}`);
@@ -337,7 +349,7 @@
             return (
                 <div className="text-ocd-black font-sans flex flex-col items-center relative min-h-screen overflow-x-hidden">
                     
-                    {/* QUICK CART MODULE */}
+                    {/* QUICK CART MODULE - FIXED & STABLE */}
                     {!isExporting && (
                         <div className="quick-cart no-print">
                             <div className={`cart-dropdown ${isCartOpen ? 'open' : ''}`}>
@@ -350,15 +362,15 @@
                                         <div key={idx} className="group flex justify-between items-start gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
                                             <div className="flex gap-3 items-center flex-1">
                                                 <span className="font-mono text-[10px] text-zinc-600">{(idx + 1).toString().padStart(2, '0')}</span>
-                                                <span className="text-[12px] text-zinc-300 font-medium leading-snug">{item.name}</span>
+                                                <span className="text-[13px] text-zinc-300 font-medium leading-snug">{item.name}</span>
                                             </div>
                                             <span className="font-mono text-[11px] text-ocd-green font-medium shrink-0">{item.price > 0 ? fCLP(item.price) : 'Cortesía'}</span>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="pt-5 border-t border-white/10 space-y-4">
-                                    <div className="flex justify-between text-[12px] md:text-[13px] text-zinc-400 font-mono"><span>Subtotal</span><span>{fCLP(stats.rawTotal)}</span></div>
-                                    <div className="flex justify-between text-[12px] md:text-[13px] text-ocd-green font-mono font-bold"><span>Open Ticket (-20%)</span><span>-{fCLP(stats.discount)}</span></div>
+                                    <div className="flex justify-between text-[13px] text-zinc-400 font-mono"><span>Subtotal</span><span>{fCLP(stats.rawTotal)}</span></div>
+                                    <div className="flex justify-between text-[13px] text-ocd-green font-mono font-bold"><span>Open Ticket (-20%)</span><span>-{fCLP(stats.discount)}</span></div>
                                     <div className="h-px w-full bg-white/10 my-3"></div>
                                     <div className="flex justify-between items-end">
                                         <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">Inversión Final</span>
@@ -367,7 +379,7 @@
                                     <button onClick={() => document.getElementById('checkout-section').scrollIntoView({ behavior: 'smooth' })} className="w-full bg-ocd-green text-black font-mono text-[12px] font-bold py-4 rounded-xl uppercase tracking-widest hover:brightness-110 active:scale-95 active:opacity-80 transition-all flex justify-center items-center gap-2">Ir a Finalizar</button>
                                 </div>
                             </div>
-                            <div className="cart-bubble z-[100]" onClick={() => setIsCartOpen(!isCartOpen)}>
+                            <div className="cart-bubble" onClick={() => setIsCartOpen(!isCartOpen)}>
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-1">Total Proyecto</span>
                                     <span className="text-lg md:text-xl font-black tracking-tight">{fCLP(stats.final)}</span>
@@ -407,7 +419,7 @@
                                     Nuestro objetivo es alinear esta visión gourmet con un sistema de marca escalable, priorizando la identidad core, la mascota y los puntos de contacto que definen la experiencia frente al público.
                                 </p>
                             </div>
-                            <div className="font-mono text-[10px] bg-ocd-gray border border-ocd-border inline-block px-4 py-2.5 text-ocd-black font-bold uppercase tracking-widest">Identidad: Queenchis</div>
+                            <div className="font-mono text-[11px] bg-ocd-gray border border-ocd-border inline-block px-4 py-2.5 text-ocd-black font-bold uppercase tracking-widest">Identidad: Queenchis</div>
                         </section>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 items-center bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
@@ -559,7 +571,7 @@
                         </div>
 
                         {/* SECCIÓN DE PAGO - CONTRASTE ELEVADO PARA RUTAS */}
-                        <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[2.5rem] overflow-hidden relative no-print pb-12 z-10">
+                        <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[3rem] overflow-hidden relative no-print pb-14 z-10">
                             <div className="relative z-20">
                                 <div className="p-10 md:p-14 flex flex-col items-center text-center">
                                     <span className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-6 flex items-center gap-2.5">
@@ -576,7 +588,7 @@
                                     <button 
                                         type="button"
                                         onClick={() => setSelectedPlan('01')} 
-                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '01' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
+                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2.5rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '01' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full">
                                             <div className="flex items-center gap-5">
@@ -585,7 +597,7 @@
                                                 </div>
                                                 <div>
                                                     <span className={`block font-bold text-[22px] leading-none mb-2 ${selectedPlan === '01' ? 'text-ocd-green' : 'text-zinc-400'}`}>Protocolo Bifásico (50/50)</span>
-                                                    <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase">Activación inmediata y liquidación al Handoff</span>
+                                                    <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase">Inicio (50%) / Cierre & Handoff (50%)</span>
                                                 </div>
                                             </div>
                                             <div className="text-left sm:text-right border-t border-[#333] sm:border-transparent pt-5 sm:pt-0 mt-2 sm:mt-0 flex flex-col">
@@ -599,7 +611,7 @@
                                     <button 
                                         type="button"
                                         onClick={() => setSelectedPlan('02')} 
-                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '02' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
+                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2.5rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '02' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full">
                                             <div className="flex items-center gap-5">
@@ -608,7 +620,7 @@
                                                 </div>
                                                 <div>
                                                     <span className={`block font-bold text-[22px] leading-none mb-2 ${selectedPlan === '02' ? 'text-ocd-green' : 'text-zinc-400'}`}>Estructura Trifásica (30/30/40)</span>
-                                                    <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase italic">Hitos: Inicio (30%) / Concepto (30%) / Cierre (40%)</span>
+                                                    <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase italic">Activación (30%) / Concepto (30%) / Entrega (40%)</span>
                                                 </div>
                                             </div>
                                             <div className="text-left sm:text-right border-t border-[#333] sm:border-transparent pt-5 sm:pt-0 mt-2 sm:mt-0 flex flex-col">
@@ -623,7 +635,7 @@
                                     <div className="space-y-4">
                                         <div className="bg-[#111] p-8 rounded-3xl border border-zinc-800">
                                             <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block">Banca / Recepción</span>
-                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono">
+                                            <div className="text-[15px] text-zinc-400 space-y-2 font-mono">
                                                 <strong className="text-white block mb-4 font-sans text-xl tracking-tight leading-none">Javiera Saint-Jour</strong>
                                                 <span className="block">RUT: 18.445.291-K</span>
                                                 <span className="block">Scotiabank — Cta. Corriente</span>
@@ -634,15 +646,14 @@
                                         <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2">✶ Conversar ahora</button>
                                     </div>
 
-                                    <div className="space-y-6">
-                                        <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl h-full flex flex-col justify-center">
-                                            <p className="text-[13px] text-zinc-400 leading-relaxed mb-8">Una vez realizado el abono, descarga el PDF y notifícanos para iniciar la fase operativa.</p>
+                                    <div className="space-y-6 h-full flex flex-col justify-center">
+                                        <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl">
                                             <div className="flex flex-col gap-4">
-                                                <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex justify-center items-center gap-3 ${isExporting ? 'opacity-50' : ''}`}>
+                                                <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:bg-zinc-200 transition-all active:scale-95 active:opacity-70 flex justify-center items-center gap-3 touch-manipulation ${isExporting ? 'opacity-50' : ''}`}>
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                     {isExporting ? 'Procesando...' : '1. Descargar PDF'}
                                                 </button>
-                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(74,222,128,0.2)]">
+                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-3 active:opacity-80 touch-manipulation shadow-[0_0_30px_rgba(74,222,128,0.2)]">
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                                                     2. Notificar vía WhatsApp
                                                 </button>
@@ -667,21 +678,21 @@
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Logotipo oficial</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG). Incluye variantes cromáticas y reducciones técnicas.</span>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG). Incluye variantes cromáticas y reducciones técnicas.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Manual de marca</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Archivos de producción</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium font-medium">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
                                     </div>
                                 </li>
                             </ul>
@@ -690,37 +701,61 @@
                         {/* FIRMAS Y SELLO - BALANCE EDITORIAL PREMIUM */}
                         <div className="mt-36 flex flex-col md:flex-row justify-between items-center md:items-end pt-24 gap-12 relative pb-10 border-t border-zinc-100">
                             
-                            {/* Rotating Authorization Seal - Centrado como eje visual */}
-                            <div className="absolute top-[-80px] md:top-[-60px] left-1/2 -translate-x-1/2 w-32 h-32 md:w-44 h-44 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
-                                <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_15s_linear_infinite]">
-                                    <defs><path id="sealPath" d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0" /></defs>
-                                    <text fontSize="10" fontWeight="bold" fill="currentColor" className="font-mono uppercase tracking-widest">
-                                        <textPath href="#sealPath" startOffset="0%" textLength="226" lengthAdjust="spacingAndGlyphs">• OPEN CLUB • AUTHORIZED • OPEN CLUB • AUTHORIZED </textPath>
-                                    </text>
-                                </svg>
-                                <div className="absolute inset-0 flex items-center justify-center font-black text-6xl tracking-tighter pt-1.5">O</div>
-                            </div>
-                            
-                            {/* Bloque Izquierdo: Aprobación Cliente */}
-                            <div className="flex-1 w-full md:w-auto text-center md:text-left order-2 md:order-1 relative z-10 flex flex-col items-center md:items-start">
-                                <div className="border-b-2 border-ocd-black mb-3 pb-8 md:pb-12 w-3/4 md:w-full relative flex justify-center md:justify-start items-end opacity-20">
-                                    <span className="font-black text-[11px] tracking-tighter uppercase text-ocd-black leading-none tracking-[0.2em]">OPEN SYSTEM</span>
+                            {/* Bloque Izquierdo: Aprobación Cliente (Interactivo) */}
+                            <div className="flex-1 w-full md:w-auto text-center md:text-left order-2 md:order-1 relative z-10 flex flex-col items-center md:items-start group">
+                                <div className="border-b-2 border-ocd-black mb-3 pb-8 md:pb-12 w-3/4 md:w-full relative flex justify-center md:justify-start items-end">
+                                    <div className="absolute inset-0 flex items-center justify-center md:justify-start">
+                                        <button 
+                                            onClick={() => setIsApproved(!isApproved)}
+                                            className={`no-print px-4 py-2 rounded-full font-mono text-[10px] font-bold tracking-widest uppercase transition-all duration-500 border ${isApproved ? 'bg-ocd-green text-black border-ocd-green scale-90' : 'bg-white text-zinc-400 border-zinc-200 hover:border-ocd-green hover:text-ocd-green'}`}
+                                        >
+                                            {isApproved ? '✓ Contrato Validado' : 'Clic para Aprobar'}
+                                        </button>
+                                        
+                                        {/* Sello de Aprobación Visual (Visible en PDF si está activo) */}
+                                        {isApproved && (
+                                            <div className="absolute top-[-30px] left-0 animate-fade-in pointer-events-none">
+                                                <div className="border-4 border-ocd-green text-ocd-green font-black px-4 py-1 text-2xl rotate-[-12deg] opacity-60">
+                                                    APPROVED
+                                                </div>
+                                                <div className="text-[8px] font-mono text-ocd-green font-bold mt-1 uppercase tracking-tighter">Auth_Folio: {Math.random().toString(36).substring(7).toUpperCase()}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="font-black text-[11px] tracking-tighter uppercase text-ocd-black leading-none tracking-[0.2em] opacity-20">OPEN SYSTEM</span>
                                 </div>
                                 <div className="font-bold text-ocd-black uppercase text-[11px] md:text-[12px] tracking-[0.3em] font-sans leading-none">Aprobación Cliente</div>
                             </div>
 
                             {/* Bloque Central: Version Tracking */}
                             <div className="order-3 md:order-2 flex flex-col items-center relative z-10">
-                                <div className="font-mono text-[10px] text-zinc-400 tracking-[0.2em] uppercase font-bold bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full border border-zinc-100">
+                                <div className="font-mono text-[10px] text-zinc-400 tracking-[0.2em] uppercase font-bold bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full border border-zinc-100 shadow-sm">
                                     Open Club System v.58.0
                                 </div>
                             </div>
 
-                            {/* Bloque Derecho: Firma Dirección */}
-                            <div className="flex-1 w-full md:w-auto text-center md:text-right order-1 md:order-3 relative z-10 flex flex-col items-center md:items-end">
-                                <div className="border-b-2 border-ocd-black mb-3 pb-8 md:pb-12 w-3/4 md:w-full text-ocd-green font-mono text-[13px] italic font-bold uppercase tracking-widest leading-none">Auth_YI_Director</div>
-                                <div className="font-bold text-ocd-black text-[18px] md:text-xl uppercase tracking-tighter leading-none inline-block mt-2">Javiera Saint-Jour</div>
-                                <div className="font-mono text-[10px] text-zinc-500 mt-2.5 uppercase font-bold italic tracking-[0.15em] leading-tight">Dirección y producción creativa</div>
+                            {/* Bloque Derecho: Firma Dirección (Con Sello Giratorio) */}
+                            <div className="flex-1 w-full md:w-auto text-center md:text-right order-1 md:order-3 relative z-10 flex flex-col items-center md:items-end group">
+                                {/* Rotating Authorization Seal - Centrado sobre tu nombre */}
+                                <div className="absolute top-[-90px] md:top-[-110px] right-1/2 translate-x-1/2 md:translate-x-0 md:right-0 w-32 h-32 md:w-44 h-44 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
+                                    <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_15s_linear_infinite]">
+                                        <defs><path id="sealPath" d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0" /></defs>
+                                        <text fontSize="10" fontWeight="bold" fill="currentColor" className="font-mono uppercase tracking-widest">
+                                            <textPath href="#sealPath" startOffset="0%" textLength="226" lengthAdjust="spacingAndGlyphs">• OPEN CLUB • AUTHORIZED • OPEN CLUB • AUTHORIZED </textPath>
+                                        </text>
+                                    </svg>
+                                    <div className="absolute inset-0 flex items-center justify-center font-black text-6xl tracking-tighter pt-1.5">O</div>
+                                </div>
+
+                                <div className="border-b-2 border-ocd-black mb-3 pb-8 md:pb-12 w-3/4 md:w-full text-ocd-green font-mono text-[13px] italic font-bold uppercase tracking-widest leading-none relative z-10">
+                                    Auth_YI_Director
+                                </div>
+                                <div className="font-bold text-ocd-black text-[18px] md:text-xl uppercase tracking-tighter leading-none inline-block mt-2 relative z-10">
+                                    Javiera Saint-Jour
+                                </div>
+                                <div className="font-mono text-[10px] text-zinc-500 mt-2.5 uppercase font-bold italic tracking-[0.15em] leading-tight relative z-10">
+                                    Dirección y producción creativa
+                                </div>
                             </div>
                         </div>
                     </div>
