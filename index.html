@@ -40,7 +40,7 @@
     </script>
 
     <style>
-        /* UI/UX Mobile Robustness */
+        /* Melhoria de Robustez UI/UX Mobile */
         * {
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
@@ -54,7 +54,7 @@
             background: white; 
             margin: 0 auto; 
             padding: 1.5rem; 
-            padding-bottom: 10rem; /* Ampliado para mobile safe area */
+            padding-bottom: 10rem; /* Espaço para o carrinho flutuante em mobile */
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
             position: relative; 
         }
@@ -311,7 +311,8 @@
                 const helpMsg = `¡Hola Yi! ✶ Tengo algunas dudas sobre la propuesta, ¿podemos conversar?`;
                 
                 const text = type === 'payment' ? paymentMsg : helpMsg;
-                window.open(`https://api.whatsapp.com/send?phone=56949873116&text=${encodeURIComponent(text)}`, '_blank');
+                // Usamos window.location.assign para maior compatibilidade com navegadores móveis (evita bloqueio de pop-ups)
+                window.location.assign(`https://api.whatsapp.com/send?phone=56949873116&text=${encodeURIComponent(text)}`);
             };
 
             const scrollToCheckout = () => {
@@ -321,7 +322,7 @@
             return (
                 <div className="text-ocd-black font-sans flex flex-col items-center relative min-h-screen">
                     
-                    {/* QUICK CART MODULE */}
+                    {/* CARRINHO DE ACESSO RÁPIDO */}
                     {!isExporting && (
                         <div className="quick-cart no-print">
                             <div className={`cart-dropdown ${isCartOpen ? 'open' : ''}`}>
@@ -343,8 +344,8 @@
                                 </div>
 
                                 <div className="pt-5 border-t border-white/10 space-y-4">
-                                    <div className="flex justify-between text-[12px] text-zinc-400 font-mono"><span>Subtotal</span><span>{fCLP(stats.baseTotal)}</span></div>
-                                    <div className="flex justify-between text-[12px] text-ocd-green font-mono font-bold"><span>Open Ticket (-20%)</span><span>-{fCLP(stats.discount)}</span></div>
+                                    <div className="flex justify-between text-[12px] md:text-[13px] text-zinc-400 font-mono"><span>Subtotal</span><span>{fCLP(stats.baseTotal)}</span></div>
+                                    <div className="flex justify-between text-[12px] md:text-[13px] text-ocd-green font-mono font-bold"><span>Open Ticket (-20%)</span><span>-{fCLP(stats.discount)}</span></div>
                                     <div className="h-px w-full bg-white/10 my-3"></div>
                                     <div className="flex justify-between items-end">
                                         <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">Inversión Final</span>
@@ -367,7 +368,7 @@
                         </div>
                     )}
 
-                    {/* DOCUMENT PAGE */}
+                    {/* PÁGINA DO DOCUMENTO */}
                     <div className="a4-page">
                         <header className="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-ocd-black pb-5 md:pb-6 mb-10 gap-5 md:gap-0">
                             <div>
@@ -507,7 +508,7 @@
                             </div>
                         </div>
 
-                        {/* SECCIÓN DE PAGO - BLINDADA PARA MOBILE */}
+                        {/* SECÇÃO DE PAGAMENTO - OTIMIZADA PARA MOBILE */}
                         <div id="checkout-section" className="mb-12 bg-[#0D0D0D] text-white border border-black shadow-2xl rounded-[2.5rem] overflow-hidden relative no-print pb-12 z-10">
                             
                             <div className="relative z-20">
@@ -525,8 +526,8 @@
                                     {/* Ruta 01 Selector */}
                                     <button 
                                         type="button" 
-                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedPlan('01'); }}
-                                        className={`w-full text-left border p-6 rounded-3xl transition-all duration-300 relative select-none outline-none z-40 ${selectedPlan === '01' ? 'border-ocd-green bg-ocd-green/5' : 'border-[#222] bg-[#111] opacity-70'}`}
+                                        onClick={() => setSelectedPlan('01')}
+                                        className={`w-full text-left border p-6 rounded-3xl transition-all duration-300 relative select-none outline-none ${selectedPlan === '01' ? 'border-ocd-green bg-ocd-green/5' : 'border-[#222] bg-[#111] opacity-70'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
                                             <div className="flex items-center gap-4">
@@ -548,8 +549,8 @@
                                     {/* Ruta 02 Selector */}
                                     <button 
                                         type="button" 
-                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedPlan('02'); }}
-                                        className={`w-full text-left border p-6 rounded-3xl transition-all duration-300 relative select-none outline-none z-40 ${selectedPlan === '02' ? 'border-ocd-green bg-ocd-green/5' : 'border-[#222] bg-[#111] opacity-70'}`}
+                                        onClick={() => setSelectedPlan('02')}
+                                        className={`w-full text-left border p-6 rounded-3xl transition-all duration-300 relative select-none outline-none ${selectedPlan === '02' ? 'border-ocd-green bg-ocd-green/5' : 'border-[#222] bg-[#111] opacity-70'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
                                             <div className="flex items-center gap-4">
@@ -568,14 +569,14 @@
                                         </div>
                                     </button>
 
-                                    {/* Botonera de Acción */}
+                                    {/* Botões de Ação */}
                                     <div className="md:col-span-2 mt-8 space-y-4 relative z-50">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <button 
                                                 type="button" 
                                                 onClick={handleDownloadPDF} 
                                                 disabled={isExporting}
-                                                className={`bg-white text-black font-mono text-[13px] font-bold py-5 rounded-2xl uppercase tracking-widest hover:bg-zinc-200 active:bg-zinc-300 transition-all flex justify-center items-center gap-3 z-50 ${isExporting ? 'opacity-50' : ''}`}
+                                                className={`bg-white text-black font-mono text-[13px] font-bold py-5 rounded-2xl uppercase tracking-widest hover:bg-zinc-200 active:bg-zinc-300 transition-all flex justify-center items-center gap-3 ${isExporting ? 'opacity-50' : ''}`}
                                             >
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                 {isExporting ? 'Generando...' : '1. Descargar PDF'}
@@ -583,7 +584,7 @@
                                             <button 
                                                 type="button" 
                                                 onClick={() => handleWhatsApp('payment')} 
-                                                className="bg-ocd-green text-black font-mono text-[13px] font-bold py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 active:opacity-80 transition-all flex justify-center items-center gap-3 z-50"
+                                                className="bg-ocd-green text-black font-mono text-[13px] font-bold py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 active:opacity-80 transition-all flex justify-center items-center gap-3"
                                             >
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                                                 2. Notificar por WhatsApp
@@ -594,7 +595,7 @@
                                             <div className="bg-[#111] p-6 rounded-3xl border border-[#222]">
                                                 <span className="font-mono text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-4 block">Banca / Recepción</span>
                                                 <div className="text-[13px] text-zinc-400 space-y-1.5 font-mono">
-                                                    <strong className="text-white block mb-2 font-sans text-[15px]">Javiera Saint-Jour Castro</strong>
+                                                    <strong className="text-white block mb-2 font-sans text-[15px]">Javiera Saint-Jour</strong>
                                                     <span>RUT: 18.445.291-K</span><br/>
                                                     <span>Scotiabank — Cta. Corriente</span><br/>
                                                     <span>Nº 976998219</span><br/>
