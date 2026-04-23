@@ -71,7 +71,7 @@
                 min-height: 297mm;
                 margin: 2rem auto;
                 padding: 20mm;
-                padding-bottom: 20mm;
+                padding-bottom: 30mm;
                 box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
             }
         }
@@ -80,11 +80,15 @@
         .exporting-pdf {
             width: 800px !important; 
             max-width: 800px !important;
-            padding: 40px !important;
+            padding: 50px !important;
             box-shadow: none !important;
             transform: none !important;
             background: white !important;
-            color: #050505 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: -9999 !important;
+            display: block !important;
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -161,11 +165,11 @@
                 tag: 'NECESARIA',
                 color: 'bg-ocd-green text-black font-bold',
                 items: [
-                    { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico del proyecto (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
+                    { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
                     { id: 'f1_1', name: 'Logo principal + sistema visual', desc: 'Desarrollo de 2 direcciones gráficas estratégicas y versiones oficiales.', hours: 14.0, days: 5, isEssential: true },
-                    { id: 'f1_2', name: 'Manual de marca', desc: 'Guía técnica integral que consolida paleta de colores, familia tipográfica y normas de uso.', hours: 5.0, days: 2, priceOverride: 100000, isEssential: true },
-                    { id: 'f1_3', name: 'Señalética física (1 pieza)', desc: 'Diseño técnico de 1 pieza clave para el local. Ej: Letrero de fachada o pizarras de menú.', hours: 2.0, days: 2, priceOverride: 50000, isEssential: true },
-                    { id: 'f1_4', name: 'Diseño de menú base', desc: 'Diseño de 1 ejemplar maestro de carta adaptable. Arquitectura de contenido estratégica.', hours: 6.0, days: 3, isEssential: true }
+                    { id: 'f1_2', name: 'Manual de marca', desc: 'Guía técnica integral que consolida paleta de colores y normas de uso.', hours: 5.0, days: 2, priceOverride: 100000, isEssential: true },
+                    { id: 'f1_3', name: 'Señalética física (1 pieza)', desc: 'Diseño técnico de 1 pieza clave (Ej: Letrero fachada o pizarra menú).', hours: 2.0, days: 2, priceOverride: 50000, isEssential: true },
+                    { id: 'f1_4', name: 'Diseño de menú base', desc: 'Diseño de 1 ejemplar maestro de carta adaptable estratégica.', hours: 6.0, days: 3, isEssential: true }
                 ]
             },
             {
@@ -175,10 +179,10 @@
                 color: 'bg-ocd-black text-ocd-green',
                 items: [
                     { id: 'f2_1', name: 'Stickers packaging', desc: 'Diseño de 3 variantes de etiquetas de marca para diversos soportes.', hours: 2.0, days: 1, priceOverride: 50000 },
-                    { id: 'f2_pap', name: 'Papelería corporativa', desc: 'Diseño para pieza impresa para difusión y operación (flyers, tarjetas o posters).', hours: 3.5, days: 2, priceOverride: 50000 },
+                    { id: 'f2_pap', name: 'Papelería corporativa', desc: 'Diseño para pieza impresa (flyers, tarjetas o posters).', hours: 3.5, days: 2, priceOverride: 50000 },
                     { id: 'f2_m', name: 'Ilustración / Mascot creation', desc: 'Desarrollo de personaje o mascota animada en 3 poses.', hours: 8.0, days: 4, priceOverride: 50000 },
-                    { id: 'f2_p', name: 'Dirección creativa para campaña', desc: 'Conceptos visuales y narrativa para el lanzamiento del local y redes sociales.', hours: 6.0, days: 3 },
-                    { id: 'f2_f', name: 'Reunión: Presentación final', desc: 'Cierre de etapa de diseño y entrega oficial de activos del sistema (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0 }
+                    { id: 'f2_p', name: 'Dirección creativa para campaña', desc: 'Conceptos visuales y narrativa para lanzamiento y redes sociales.', hours: 6.0, days: 3 },
+                    { id: 'f2_f', name: 'Reunión: Presentación final', desc: 'Cierre de etapa de diseño y entrega oficial de activos (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0 }
                 ]
             },
             {
@@ -187,11 +191,11 @@
                 tag: 'OPCIONAL',
                 color: 'bg-zinc-100 text-zinc-500',
                 items: [
-                    { id: 'f3_1', name: 'Landing page (UI o HTML)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML listo para web.', hours: 25.0, days: 10 },
-                    { id: 'f3_2', name: '12 Plantillas editables RRSS', desc: 'Set de 12 plantillas maestras a elección del cliente (Posts o Stories).', hours: 6.5, days: 3 },
-                    { id: 'm_base', name: 'Merch / Diseño base', desc: 'Aplicación simple en indumentaria (delantales, gorras o tote bags).', hours: 2.5, days: 2, priceOverride: 50000 },
+                    { id: 'f3_1', name: 'Landing page (UI o HTML)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML.', hours: 25.0, days: 10 },
+                    { id: 'f3_2', name: '12 Plantillas editables RRSS', desc: 'Set de 12 plantillas maestras a elección (Posts o Stories).', hours: 6.5, days: 3 },
+                    { id: 'm_base', name: 'Merch / Diseño base', desc: 'Aplicación simple en indumentaria (delantales o tote bags).', hours: 2.5, days: 2, priceOverride: 50000 },
                     { id: 'm_complex', name: 'Merch / Diseño ilustrado', desc: 'Arte a gran escala aplicada a soportes textiles premium.', hours: 5.5, days: 4, priceOverride: 100000 },
-                    { id: 'cons_1', name: 'Consultoría estratégica', desc: 'Asesoría técnica para la toma de decisiones tácticas o expansivas.', hours: 1.0, days: 0, priceOverride: 50000 }
+                    { id: 'cons_1', name: 'Consultoría estratégica', desc: 'Asesoría técnica para decisiones tácticas o expansivas.', hours: 1.0, days: 0, priceOverride: 50000 }
                 ]
             }
         ];
@@ -249,23 +253,26 @@
                 setIsExporting(true);
                 
                 const element = document.querySelector('.a4-page');
-                const originalStyle = element.getAttribute('style');
-                element.classList.add('exporting-pdf');
                 
-                await new Promise(r => setTimeout(r, 600));
+                // Forzar scroll arriba para captura perfecta
+                const originalScroll = window.scrollY;
+                window.scrollTo(0, 0);
+                
+                // Pequeño delay para que el motor de renderizado asimile el cambio
+                await new Promise(r => setTimeout(r, 800));
 
                 try {
                     const canvas = await html2canvas(element, {
-                        scale: 3, // Calidad de impresión editorial
+                        scale: 3, // Calidad editorial 3x
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false,
-                        windowWidth: 800, 
-                        scrollY: -window.scrollY
+                        windowWidth: 800, // Fuerza ancho desktop en captura
+                        scrollY: 0
                     });
                     
                     const imgData = canvas.toDataURL('image/png', 1.0);
-                    const imgWidth = 210; // mm
+                    const imgWidth = 210; 
                     const pageHeight = (canvas.height * imgWidth) / canvas.width;
                     
                     const pdf = new jspdf.jsPDF({
@@ -279,7 +286,7 @@
                 } catch (err) { 
                     console.error('PDF Export Failed:', err); 
                 } finally {
-                    element.classList.remove('exporting-pdf');
+                    window.scrollTo(0, originalScroll);
                     setIsExporting(false);
                 }
             };
@@ -287,7 +294,7 @@
             const handleWhatsApp = (type = 'payment') => {
                 const planText = selectedPlan === '01' ? 'Protocolo Bifásico (50/50)' : 'Estructura Trifásica (30/30/40)';
                 const paymentAmount = selectedPlan === '01' ? abonoA : abonoB;
-                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta para Queenchis. Adjunto el PDF y el comprobante por el abono inicial de ${fCLP(paymentAmount)}. (Mis datos: RUT, Nombres, Domicilio, Comuna). Gracias!`;
+                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta para Queenchis. Adjunto el PDF y el comprobante por el abono de ${fCLP(paymentAmount)}. (Mis datos para la boleta: RUT, Nombres, Domicilio, Comuna). Gracias!`;
                 const helpMsg = `¡Hola Yi! ✶ Tengo algunas dudas sobre la propuesta de Queenchis, ¿podemos conversar?`;
                 const text = type === 'payment' ? paymentMsg : helpMsg;
                 window.location.assign(`https://api.whatsapp.com/send?phone=56949873116&text=${encodeURIComponent(text)}`);
@@ -462,21 +469,21 @@
                                     <div className="text-ocd-green mt-1 shrink-0 bg-ocd-green/5 p-2 rounded-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Logotipo oficial (Master Files)</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG). Incluye variantes cromáticas y reducciones técnicas.</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG).</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Manual de marca (Guía Técnica)</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), tipografías, iconografía y normas de aplicación para consistencia visual absoluta.</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Guía técnica integral que detalla: códigos de color (HEX/CMYK), tipografías y normas de aplicación para consistencia visual absoluta.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Archivos de producción final</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed font-medium">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Documentos listos para envío directo a imprenta y proveedores (Maquetación de menú, stickers y papelería varia).</span>
                                     </div>
                                 </li>
                             </ul>
@@ -576,7 +583,7 @@
                                     <div className="space-y-5 mb-10">
                                         <div className="flex justify-between text-sm">
                                             <span className="text-zinc-500 font-mono uppercase tracking-widest text-[11px] font-bold">Inversión Nominal</span>
-                                            <span className="text-zinc-900 font-mono font-bold">{fCLP(stats.rawTotal)}</span>
+                                            <span className="text-zinc-900 font-mono font-black">{fCLP(stats.rawTotal)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm italic">
                                             <span className="text-ocd-green font-mono uppercase tracking-widest text-[11px] font-black">Open Ticket Benefit (-20%)</span>
@@ -618,7 +625,7 @@
                                     <button 
                                         type="button"
                                         onClick={() => setSelectedPlan('02')} 
-                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2.5rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '02' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
+                                        className={`w-full text-left border-4 p-6 md:p-8 rounded-[2rem] transition-all duration-300 relative select-none outline-none group active:scale-[0.98] z-[40] ${selectedPlan === '02' ? 'border-ocd-green bg-[#151515] shadow-[0_0_50px_rgba(74,222,128,0.2)] scale-[1.02]' : 'border-zinc-800 bg-[#080808] opacity-70 hover:opacity-100 hover:border-zinc-700'}`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 w-full">
                                             <div className="flex items-center gap-5">
@@ -626,7 +633,7 @@
                                                     {selectedPlan === '02' && <div className="w-3.5 h-3.5 bg-ocd-green rounded-full animate-fade-in shadow-[0_0_10px_#4ADE80]"></div>}
                                                 </div>
                                                 <div>
-                                                    <span className={`block font-bold text-[20px] md:text-[22px] leading-none mb-2 ${selectedPlan === '02' ? 'text-ocd-green' : 'text-zinc-400'}`}>Estructura Trifásica (30/30/40)</span>
+                                                    <span className={`block font-bold text-[22px] leading-none mb-2 ${selectedPlan === '02' ? 'text-ocd-green' : 'text-zinc-400'}`}>Estructura Trifásica (30/30/40)</span>
                                                     <span className="block text-[13px] text-zinc-500 font-mono font-bold tracking-widest uppercase italic">Activación (30%) / Concepto (30%) / Entrega (40%)</span>
                                                 </div>
                                             </div>
@@ -639,21 +646,7 @@
                                 </div>
 
                                 <div className="px-6 md:px-14 grid grid-cols-1 md:grid-cols-2 gap-8 items-start relative z-[30]">
-                                    <div className="space-y-4">
-                                        <div className="bg-[#111] p-8 rounded-3xl border border-zinc-800 shadow-inner">
-                                            <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block">Banca / Recepción</span>
-                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono">
-                                                <strong className="text-white block mb-4 font-sans text-xl tracking-tight leading-none">Javiera Saint-Jour</strong>
-                                                <span className="block">RUT: 18.445.291-K</span>
-                                                <span className="block">Scotiabank — Cta. Corriente</span>
-                                                <span className="block">Nº 976998219</span>
-                                                <span className="block mt-4 text-zinc-300 font-bold">openclubdesign@gmail.com</span>
-                                            </div>
-                                        </div>
-                                        <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2 font-mono shadow-lg">✶ Conversar ahora</button>
-                                    </div>
-
-                                    <div className="space-y-6 h-full flex flex-col justify-center">
+                                    <div className="space-y-6 h-full flex flex-col justify-center order-2 md:order-1">
                                         <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl h-full flex flex-col justify-center shadow-inner">
                                             <p className="text-[13px] text-zinc-400 leading-relaxed mb-8 font-medium italic">Una vez aprobada la cotización, descarga el PDF y notifícanos vía WhatsApp con el comprobante de abono para iniciar operaciones.</p>
                                             <div className="flex flex-col gap-4">
@@ -667,6 +660,20 @@
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-4 order-1 md:order-2">
+                                        <div className="bg-[#111] p-8 rounded-3xl border border-zinc-800 shadow-inner">
+                                            <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block">Banca / Recepción</span>
+                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono">
+                                                <strong className="text-white block mb-4 font-sans text-xl tracking-tight leading-none">Javiera Saint-Jour</strong>
+                                                <span className="block">RUT: 18.445.291-K</span>
+                                                <span className="block">Scotiabank — Cta. Corriente</span>
+                                                <span className="block">Nº 976998219</span>
+                                                <span className="block mt-4 text-zinc-300 font-bold">openclubdesign@gmail.com</span>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2 font-mono shadow-lg">✶ Conversar ahora</button>
                                     </div>
                                 </div>
 
