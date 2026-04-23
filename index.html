@@ -71,11 +71,12 @@
                 min-height: 297mm;
                 margin: 2rem auto;
                 padding: 20mm;
-                padding-bottom: 20mm;
+                padding-bottom: 25mm;
                 box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
             }
         }
 
+        /* Estabilizador de PDF para captura de alta resolución */
         .exporting-pdf {
             width: 800px !important; 
             max-width: 800px !important;
@@ -86,6 +87,16 @@
             color: #050505 !important;
         }
 
+        /* MAESTRO PDF (EDITORIAL - INVISIBLE) */
+        #pdf-master {
+            position: absolute; left: -9999px; top: 0;
+            width: 800px; background: white; color: black;
+            padding: 80px; font-family: 'Inter', sans-serif;
+        }
+        .pdf-mono { font-family: 'Space Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .pdf-hr { border-bottom: 1.5px solid #000; margin: 24px 0; }
+        .pdf-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #ddd; }
+
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #00D64F; border-radius: 10px; }
 
@@ -95,15 +106,11 @@
         }
         .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
 
-        @media print {
-            .no-print { display: none !important; }
-            body { background-color: white; }
-            .a4-page { width: 100%; max-width: none; min-height: 100%; margin: 0; padding: 10mm; box-shadow: none; border: none; }
-        }
-
         textarea {
             field-sizing: content;
-            min-height: 80px;
+            min-height: 100px;
+            resize: none;
+            border-radius: 12px;
         }
     </style>
 </head>
@@ -112,6 +119,11 @@
 
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
+
+        // --- CONSTANTES ---
+        const BASE_RATE = 25000;
+        const DISCOUNT_PCT = 0.20;
+        const TAX_RATE = 0.1375; // Tasa Retención Honorarios Chile 2024
 
         // --- COMPONENTES AUXILIARES ---
         function RadarChart({ data }) {
@@ -139,25 +151,18 @@
                     })}
                     <path d={getPath(data.map(d => d.current))} fill="#8B8B8B" fillOpacity="0.15" stroke="#8B8B8B" strokeWidth="1" />
                     <path d={getPath(data.map(d => d.potential))} fill="#00D64F" fillOpacity="0.25" stroke="#00D64F" strokeWidth="2.5" />
-                    {data.map((d, i) => {
-                        const x = center + (radius + 28) * Math.sin(i * angleStep);
-                        const y = center - (radius + 20) * Math.cos(i * angleStep);
-                        return (
-                            <text key={i} x={x} y={y} textAnchor="middle" fill="#656568" className="font-mono text-[7px] font-bold uppercase tracking-tighter text-[8px]">
-                                {d.axis}
-                            </text>
-                        );
-                    })}
+                    {data.map((d, i) => (
+                        <text key={i} x={center + (radius + 28) * Math.sin(i * angleStep)} y={center - (radius + 20) * Math.cos(i * angleStep)} textAnchor="middle" fill="#656568" className="font-mono text-[7px] font-bold uppercase tracking-tighter">
+                            {d.axis}
+                        </text>
+                    ))}
                 </svg>
             );
         }
 
         const fCLP = (num) => '$' + Math.round(num || 0).toLocaleString('es-CL').replace(/,/g, '.');
 
-        // --- DATOS MAESTROS ---
-        const BASE_RATE = 25000;
-        const DISCOUNT_PCT = 0.20;
-
+        // --- CONFIGURACIÓN DE FASES ---
         const PHASES = [
             {
                 id: 'f1',
@@ -165,37 +170,36 @@
                 tag: 'NECESARIA',
                 color: 'bg-ocd-green text-black font-bold',
                 items: [
-                    { id: 'f1_0', name: 'Reunión: Briefing & definición', desc: 'Alineación de objetivos y marco estratégico (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0, isEssential: true },
-                    { id: 'f1_1', name: 'Logo principal + sistema visual', desc: 'Desarrollo de 2 direcciones gráficas estratégicas y versiones oficiales.', hours: 14.0, days: 5, isEssential: true },
-                    { id: 'f1_2', name: 'Manual de marca', desc: 'Guía técnica integral que consolida paleta de colores, familia tipográfica y normas de uso.', hours: 5.0, days: 2, priceOverride: 100000, isEssential: true },
-                    { id: 'f1_3', name: 'Señalética física (Pieza Unitaria)', desc: 'Diseño técnico de 1 pieza para local (Ej: Letrero fachada o pizarra). Puedes aumentar la cantidad si necesitas más piezas.', hours: 2.0, days: 2, priceOverride: 50000, isEssential: true, canMultiply: true },
-                    { id: 'f1_4', name: 'Diseño de menú base', desc: 'Diseño de 1 ejemplar maestro de carta adaptable. Arquitectura de contenido estratégica.', hours: 6.0, days: 3, isEssential: true }
+                    { id: 'f1_0', name: 'Sesión: Briefing & Definición', desc: 'Alineación de objetivos y marco creativo (Cortesía).', hours: 0, days: 1, isEssential: true },
+                    { id: 'f1_1', name: 'Logo Principal + Sistema Visual', desc: 'Desarrollo de direcciones gráficas oficiales y variantes técnicas.', hours: 14.0, days: 5, isEssential: true },
+                    { id: 'f1_2', name: 'Manual de Marca Master', desc: 'Guía técnica de paleta de colores, tipografía y normas de uso.', hours: 5.0, days: 2, priceOverride: 100000, isEssential: true },
+                    { id: 'f1_3', name: 'Señalética Física (Pieza Unitaria)', desc: 'Diseño técnico de 1 pieza clave para el local físico. Posibilidad de aumentar cantidad.', hours: 2.0, days: 2, priceOverride: 50000, isEssential: true, canMultiply: true },
+                    { id: 'f1_4', name: 'Diseño de Menú Base', desc: 'Diseño de carta adaptable estratégica. Arquitectura de contenido.', hours: 6.0, days: 3, isEssential: true }
                 ]
             },
             {
                 id: 'f2',
-                title: 'Fase 2: Expansión & Arte visual',
+                title: 'Fase 2: Expansión & Arte Visual',
                 tag: 'SUGERIDA',
                 color: 'bg-ocd-black text-ocd-green',
                 items: [
-                    { id: 'f2_1', name: 'Stickers packaging', desc: 'Diseño de 3 variantes de etiquetas de marca para diversos soportes.', hours: 2.0, days: 1, priceOverride: 50000 },
-                    { id: 'f2_pap', name: 'Papelería corporativa', desc: 'Diseño para pieza impresa para difusión y operación (flyers, tarjetas o posters).', hours: 3.5, days: 2, priceOverride: 50000 },
-                    { id: 'f2_m', name: 'Ilustración / Mascot creation', desc: 'Desarrollo de personaje o mascota animada en 3 poses.', hours: 8.0, days: 4, priceOverride: 50000 },
-                    { id: 'f2_p', name: 'Dirección creativa para campaña', desc: 'Conceptos visuales y narrativa para el lanzamiento del local y redes sociales.', hours: 6.0, days: 3 },
-                    { id: 'f2_f', name: 'Reunión: Presentación final', desc: 'Cierre de etapa de diseño y entrega oficial de activos del sistema (sesión de cortesía).', hours: 0, days: 1, priceOverride: 0 }
+                    { id: 'f2_1', name: 'Stickers Packaging', desc: 'Diseño de etiquetas para diversos soportes de marca.', hours: 2.0, days: 1, priceOverride: 50000 },
+                    { id: 'f2_pap', name: 'Papelería Corporativa', desc: 'Diseño de pieza impresa (flyers, tarjetas o posters).', hours: 3.5, days: 2, priceOverride: 50000 },
+                    { id: 'f2_m', name: 'Ilustración / Mascot Creation', desc: 'Desarrollo de personaje identitario animado en 3 poses.', hours: 8.0, days: 4, priceOverride: 50000 },
+                    { id: 'f2_p', name: 'Dirección para Campaña', desc: 'Conceptos visuales y narrativa para el lanzamiento.', hours: 6.0, days: 3 },
+                    { id: 'f2_f', name: 'Sesión: Presentación Final', desc: 'Cierre de etapa y entrega oficial de activos (Cortesía).', hours: 0, days: 1, priceOverride: 0 }
                 ]
             },
             {
                 id: 'f3',
-                title: 'Fase 3: Entorno digital & Merch',
+                title: 'Fase 3: Entorno Digital & Merch',
                 tag: 'OPCIONAL',
                 color: 'bg-zinc-100 text-zinc-500',
                 items: [
-                    { id: 'f3_1', name: 'Landing page (UI o HTML)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML listo para web.', hours: 25.0, days: 10 },
-                    { id: 'f3_2', name: '12 Plantillas editables RRSS', desc: 'Set de 12 plantillas maestras a elección del cliente (Posts o Stories).', hours: 6.5, days: 3 },
-                    { id: 'm_base', name: 'Merch / Diseño base', desc: 'Aplicación simple en indumentaria (delantales, gorras o tote bags).', hours: 2.5, days: 2, priceOverride: 50000 },
-                    { id: 'm_complex', name: 'Merch / Diseño ilustrado', desc: 'Arte a gran escala aplicada a soportes textiles premium.', hours: 5.5, days: 4, priceOverride: 100000 },
-                    { id: 'cons_1', name: 'Consultoría estratégica', desc: 'Asesoría técnica para la toma de decisiones tácticas o expansivas.', hours: 1.0, days: 0, priceOverride: 50000 }
+                    { id: 'f3_1', name: 'Landing Page (UI)', desc: 'Interfaz de alto impacto entregada en Figma o código HTML.', hours: 25.0, days: 10 },
+                    { id: 'f3_2', name: '12 Plantillas Editables RRSS', desc: 'Set de 12 plantillas maestras a elección (Posts o Stories).', hours: 6.5, days: 3 },
+                    { id: 'm_base', name: 'Merch / Diseño Base', desc: 'Aplicación simple en indumentaria (delantales o tote bags).', hours: 2.5, days: 2, priceOverride: 50000 },
+                    { id: 'cons_1', name: 'Consultoría Estratégica', desc: 'Asesoría técnica para la toma de decisiones tácticas.', hours: 1.0, days: 0, priceOverride: 50000 }
                 ]
             }
         ];
@@ -207,7 +211,7 @@
             const [selectedItems, setSelectedItems] = useState(new Set([
                 'f1_0', 'f1_1', 'f1_2', 'f1_3', 'f1_4', 'f2_1', 'f2_pap', 'm_base', 'f2_f'
             ]));
-            const [quantities, setQuantities] = useState({ 'f1_3': 1 }); // Estado para cantidades
+            const [quantities, setQuantities] = useState({ 'f1_3': 1 }); 
             const [expandedPhases, setExpandedPhases] = useState(new Set(['f1', 'f2', 'f3'])); 
             const [isExporting, setIsExporting] = useState(false);
             const [selectedPlan, setSelectedPlan] = useState('01'); 
@@ -234,7 +238,7 @@
             };
 
             const stats = useMemo(() => {
-                let hrs = 0; let days = 0; let rawTotal = 0;
+                let rawTotal = 0;
                 const details = [];
                 PHASES.forEach(p => {
                     p.items.forEach(i => {
@@ -242,8 +246,6 @@
                             const qty = quantities[i.id] || 1;
                             const unitPrice = (i.priceOverride !== undefined ? i.priceOverride : i.hours * BASE_RATE);
                             const itemPrice = unitPrice * qty;
-                            hrs += (i.hours * qty);
-                            days += (i.days * qty);
                             rawTotal += itemPrice;
                             details.push({ 
                                 name: i.name + (qty > 1 ? ` (x${qty})` : ''), 
@@ -252,64 +254,48 @@
                         }
                     });
                 });
-                const totalDays = days + Math.ceil(days * 0.20);
-                const totalWeeks = (totalDays / 5).toFixed(1);
+                
                 const discount = Math.round((rawTotal * DISCOUNT_PCT) / 1000) * 1000;
-                const final = rawTotal - discount;
-                return { totalDays, totalWeeks, rawTotal, discount, final, details, count: selectedItems.size };
+                const liquido = rawTotal - discount;
+                
+                // Cálculo Boleta de Honorarios (Inversión Líquida a Bruta)
+                // Bruto = Liquido / (1 - Tasa)
+                const bruto = Math.round((liquido / (1 - TAX_RATE)) / 100) * 100;
+                const retencion = bruto - liquido;
+
+                return { rawTotal, discount, finalLiquido: liquido, bruto, retencion, details, count: selectedItems.size };
             }, [selectedItems, quantities]);
 
-            const abonoA = Math.round((stats.final * 0.5) / 1000) * 1000;
-            const abonoB = Math.round((stats.final * 0.3) / 1000) * 1000;
+            const abonoA = Math.round((stats.bruto * 0.5) / 1000) * 1000;
+            const abonoB = Math.round((stats.bruto * 0.3) / 1000) * 1000;
 
             const handleDownloadPDF = async () => {
                 if (isExporting) return;
                 setIsExporting(true);
-                
-                const element = document.querySelector('.a4-page');
-                const originalStyle = element.getAttribute('style');
-
-                // Estabilización para captura
-                element.classList.add('exporting-pdf');
+                const element = document.getElementById('pdf-master');
+                const originalScroll = window.scrollY;
                 window.scrollTo(0, 0); 
-                
-                await new Promise(r => setTimeout(r, 600));
+                await new Promise(r => setTimeout(r, 800));
 
                 try {
                     const canvas = await html2canvas(element, {
-                        scale: 3, 
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        logging: false,
-                        windowWidth: 800,
-                        scrollY: 0
+                        scale: 3, useCORS: true, backgroundColor: '#ffffff', logging: false, windowWidth: 800
                     });
-                    
                     const imgData = canvas.toDataURL('image/png', 1.0);
+                    const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
                     const imgWidth = 210; 
-                    const pageHeight = (canvas.height * imgWidth) / canvas.width;
-                    
-                    const pdf = new jspdf.jsPDF({
-                        orientation: 'p',
-                        unit: 'mm',
-                        format: [imgWidth, pageHeight]
-                    });
-                    
-                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight, undefined, 'FAST');
-                    pdf.save(`Propuesta_Cotizacion_Queenchis_OCD.pdf`);
-                } catch (err) { 
-                    console.error('PDF Export Failed:', err); 
-                } finally {
-                    element.classList.remove('exporting-pdf');
-                    setIsExporting(false);
-                }
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+                    pdf.save(`OCD_Propuesta_Queenchis.pdf`);
+                } catch (err) { console.error(err); } 
+                finally { window.scrollTo(0, originalScroll); setIsExporting(false); }
             };
 
             const handleWhatsApp = (type = 'payment') => {
                 const planText = selectedPlan === '01' ? 'Protocolo Bifásico (50/50)' : 'Estructura Trifásica (30/30/40)';
                 const paymentAmount = selectedPlan === '01' ? abonoA : abonoB;
-                const paymentMsg = `¡Hola Yi! ✶ Te confirmo que avanzaremos con la *${planText}* de la propuesta para Queenchis. Adjunto el PDF y el comprobante por el abono inicial de ${fCLP(paymentAmount)}. (Mis datos para la boleta: RUT, Nombres, Domicilio, Comuna). Gracias!`;
-                const helpMsg = `¡Hola Yi! ✶ Tengo algunas dudas sobre la propuesta de Queenchis, ¿podemos conversar?`;
+                const paymentMsg = `Confirmación de avance con la ruta *${planText}* para Queenchis. Adjunto PDF y comprobante de abono por ${fCLP(paymentAmount)}. (Datos: RUT, Nombres, Domicilio, Comuna).`;
+                const helpMsg = `Solicitud de contacto para resolver dudas sobre la propuesta de Queenchis.`;
                 const text = type === 'payment' ? paymentMsg : helpMsg;
                 window.location.assign(`https://api.whatsapp.com/send?phone=56949873116&text=${encodeURIComponent(text)}`);
             };
@@ -317,7 +303,36 @@
             return (
                 <div className="flex flex-col items-center relative min-h-screen overflow-x-hidden">
                     
-                    {/* DOCUMENT PAGE */}
+                    {/* MAESTRO PDF (EDITORIAL MINIMAL - INVISIBLE) */}
+                    <div id="pdf-master">
+                        <div className="flex justify-between items-end mb-10">
+                            <div><h1 className="text-5xl font-black tracking-tighter leading-none">OPEN CLUB</h1><p className="pdf-mono text-zinc-500 mt-2">Visual Infrastructure Studio</p></div>
+                            <div className="text-right pdf-mono">REF_ID: OCD-QCH-2026<br/>FECHA: 22 ABRIL 2026</div>
+                        </div>
+                        <div className="pdf-hr"></div>
+                        <h2 className="text-2xl font-black uppercase mb-8">Orden de Cotización: Queenchis</h2>
+                        <div className="mb-10">
+                            <p className="pdf-mono mb-4 border-b-2 border-black pb-2">Servicios en Plan</p>
+                            {stats.details.map((d, i) => (
+                                <div key={i} className="pdf-row pdf-mono text-[10px]"><span>{d.name}</span><span>{fCLP(d.price)}</span></div>
+                            ))}
+                        </div>
+                        <div className="mb-10">
+                            <p className="pdf-mono mb-4 border-b-2 border-black pb-2">Desglose Tributario (SII)</p>
+                            <div className="pdf-row pdf-mono"><span>Inversión Líquida Total</span><span>{fCLP(stats.finalLiquido)}</span></div>
+                            <div className="pdf-row pdf-mono"><span>Retención Impuesto (13.75%)</span><span>{fCLP(stats.retencion)}</span></div>
+                            <div className="flex justify-between items-end mt-8 pt-6 border-t-2 border-black"><span className="font-black text-xs uppercase tracking-[0.2em]">Inversión Bruta Final</span><span className="text-4xl font-black">{fCLP(stats.bruto)}</span></div>
+                        </div>
+                        {observations && (
+                            <div className="mb-10 p-6 bg-zinc-50 border-l-4 border-black"><p className="pdf-mono mb-2">Notas del Cliente</p><p className="text-sm italic font-medium">"{observations}"</p></div>
+                        )}
+                        <div className="mt-20 flex justify-between pt-10 border-t border-black">
+                            <div className="w-1/3"><div className="border-b border-black mb-2 h-10"></div><p className="pdf-mono text-center">Firma Cliente</p></div>
+                            <div className="w-1/3 text-right"><p className="font-black uppercase text-sm">Javiera Saint-Jour</p><p className="pdf-mono text-zinc-400">Open Club System</p></div>
+                        </div>
+                    </div>
+
+                    {/* INTERFAZ WEB */}
                     <div className="a4-page animate-fade-in">
                         <header className="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-ocd-black pb-5 md:pb-6 mb-10 gap-5 md:gap-0">
                             <div>
@@ -327,10 +342,9 @@
                                 </div>
                                 <div className="font-mono text-[10px] md:text-[11px] tracking-[0.25em] text-ocd-textMuted uppercase font-bold ml-6">Visual Infrastructure</div>
                             </div>
-                            <div className="text-left md:text-right font-mono text-[11px] md:text-[12px] text-ocd-textMuted leading-relaxed">
+                            <div className="text-left md:text-right font-mono text-[11px] md:text-[12px] text-ocd-textMuted leading-relaxed uppercase font-bold">
                                 <div>REF_ID: OCD-QCH-2026</div>
                                 <div>FECHA: 22 ABRIL 2026</div>
-                                <div className="text-ocd-green font-bold mt-2 bg-ocd-green/10 px-2.5 py-1 inline-block uppercase text-[10px]">Status: Valid proposal</div>
                             </div>
                         </header>
 
@@ -339,6 +353,7 @@
                             <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-zinc-900 leading-none uppercase">Propuesta de cotización <br/> para Queenchis</h2>
                         </div>
 
+                        {/* CONTEXTO */}
                         <section className="mb-10">
                             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-ocd-black mb-4 uppercase tracking-tighter text-zinc-900 font-sans">Contexto</h2>
                             <div className="text-zinc-700 text-sm md:text-[15px] leading-relaxed max-w-2xl mb-5">
@@ -346,16 +361,16 @@
                                     <strong>Queenchis</strong> es una sandwichería de autor inspirada en la mascota Queen. Ubicado en la Galería La Pérgola, Providencia, el proyecto combina el respeto por la cocina de autor con la versatilidad de carnes de cocción lenta y un toque de estética nipona.
                                 </p>
                                 <p>
-                                    Nuestro objetivo es alinear esta visión gourmet con un sistema de marca escalable, priorizando la identidad core, la mascota y los puntos de contacto que definen la experiencia frente al público.
+                                    El objetivo es alinear la visión gourmet con un sistema de marca escalable, priorizando la identidad core, la mascota y los puntos de contacto que definen la experiencia frente al público.
                                 </p>
                             </div>
                             <div className="font-mono text-[11px] bg-ocd-gray border border-ocd-border inline-block px-4 py-2.5 text-ocd-black font-bold uppercase tracking-widest">Identidad: Queenchis</div>
                         </section>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 items-center bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 items-center bg-zinc-50 p-6 rounded-2xl border border-zinc-100 no-print">
                             <div>
-                                <h3 className="text-lg md:text-xl font-bold mb-2 uppercase text-ocd-black tracking-tight font-sans">Brand potential matrix</h3>
-                                <p className="text-[11px] text-zinc-500 mb-5 leading-relaxed">Impacto proyectado en el sistema visual.</p>
+                                <h3 className="text-lg md:text-xl font-bold mb-2 uppercase text-ocd-black tracking-tight">Brand Potential Matrix</h3>
+                                <p className="text-[11px] text-zinc-500 mb-5 leading-relaxed">Impacto proyectado en el sistema visual de la marca.</p>
                                 <div className="flex flex-wrap gap-4 text-[10px] font-mono font-bold uppercase">
                                     <div className="flex items-center gap-2"><div className="w-3 h-3 bg-zinc-200"></div> Estado Actual</div>
                                     <div className="flex items-center gap-2"><div className="w-3 h-3 bg-ocd-green"></div> Con Open Club</div>
@@ -365,10 +380,21 @@
                                 <RadarChart data={[
                                     { axis: 'Identidad', current: 2, potential: 9.5 },
                                     { axis: 'Digital', current: 1.5, potential: 9 },
-                                    { axis: 'Experiencia', current: 2, potential: 9.5 },
+                                    { axis: 'Local', current: 2, potential: 9.5 },
                                     { axis: 'Branding', current: 2, potential: 9 },
                                     { axis: 'Social', current: 3, potential: 8.5 }
                                 ]} />
+                            </div>
+                        </div>
+
+                        {/* NOTA DE ESCALABILIDAD DESTACADA */}
+                        <div className="mb-10 p-6 border-2 border-dashed border-ocd-green bg-ocd-green/5 rounded-2xl animate-fade-in">
+                            <div className="flex items-start gap-4">
+                                <div className="bg-ocd-green text-black rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-1 font-bold text-xs">!</div>
+                                <div className="text-sm text-zinc-800 leading-relaxed">
+                                    <strong className="block uppercase text-xs font-black tracking-widest mb-1">Nota de Flexibilidad Operativa</strong>
+                                    Esta cotización es dinámica y se basa en los servicios seleccionados actualmente. En caso de decidir integrar requerimientos o servicios adicionales no listados, el presupuesto se ajustará mediante conversación previa y acuerdo mutuo.
+                                </div>
                             </div>
                         </div>
 
@@ -437,13 +463,13 @@
                                                         const unitPrice = item.priceOverride !== undefined ? item.priceOverride : item.hours * BASE_RATE;
                                                         const totalPrice = unitPrice * qty;
                                                         return (
-                                                            <div key={item.id} className={`p-5 md:p-3 grid grid-cols-1 md:grid-cols-12 gap-4 transition-colors ${isSelected ? 'bg-green-50/20' : 'opacity-40 grayscale'}`}>
-                                                                <div className="md:col-span-4 flex items-start gap-4 cursor-pointer" onClick={() => toggleItem(item.id)}>
+                                                            <div key={item.id} className={`p-5 md:p-3 grid grid-cols-1 md:grid-cols-12 gap-4 transition-colors ${isSelected ? 'bg-green-50/20' : 'opacity-40 grayscale print:hidden'}`}>
+                                                                <div className="md:col-span-4 flex items-start gap-4">
                                                                     <div className={`no-print w-5 h-5 rounded-sm border flex items-center justify-center shrink-0 mt-0.5 transition-all ${isSelected ? 'bg-ocd-green border-ocd-green text-black scale-100' : 'border-gray-300 scale-95'}`}>
                                                                         {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-2 md:h-2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                                                                     </div>
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-bold md:font-medium text-ocd-black text-[15px] md:text-sm leading-tight">{item.name}{item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}</span>
+                                                                        <span className="font-bold md:font-medium text-ocd-black text-[15px] md:text-sm leading-tight uppercase">{item.name}{item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}</span>
                                                                         {item.canMultiply && isSelected && (
                                                                             <div className="flex items-center gap-3 mt-3 no-print" onClick={(e) => e.stopPropagation()}>
                                                                                 <button onClick={() => updateQuantity(item.id, -1)} className="w-6 h-6 border rounded-full flex items-center justify-center bg-white text-ocd-black hover:bg-zinc-100">-</button>
@@ -477,21 +503,21 @@
                                     <div className="text-ocd-green mt-1 shrink-0 bg-ocd-green/5 p-2 rounded-lg"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Logotipo oficial (Master Files)</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG).</span>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG).</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Manual de marca (Guía Técnica)</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed font-medium">Guía técnica integral que detalla: códigos de color (HEX/CMYK), tipografías y normas de aplicación para consistencia visual absoluta.</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Guía técnica integral que detalla: códigos de color (HEX/CMYK), tipografías y normas de aplicación para consistencia visual absoluta.</span>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-5">
                                     <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                                     <div>
                                         <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1">Archivos de producción final</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed font-medium">Documentos finales listos para envío directo a imprenta y proveedores (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Documentos finales listos para envío directo a imprenta y proveedores (Maquetación de menú, stickers y papelería varia).</span>
                                     </div>
                                 </li>
                             </ul>
@@ -500,12 +526,12 @@
                         {/* PROTOCOLO DE ACTIVACIÓN */}
                         <div className="mb-14 p-8 bg-zinc-950 border border-zinc-800 rounded-[2.5rem] text-white">
                             <span className="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-4 block">/// Protocolo de Activación</span>
-                            <h3 className="text-2xl font-black mb-8 uppercase tracking-tight text-white leading-tight">Pasos para iniciar el proyecto</h3>
+                            <h3 className="text-2xl font-black mb-8 uppercase tracking-tight text-white leading-tight font-sans">Pasos para iniciar el proyecto</h3>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                                 {[
-                                    { id: '01', t: 'Personalizar', d: 'Confirma los servicios arriba seleccionando lo que necesitas.' },
+                                    { id: '01', t: 'Personalizar', d: 'Confirma los servicios arriba seleccionando lo necesario.' },
                                     { id: '02', t: 'Validar', d: 'Presiona el botón de aprobación para formalizar el acuerdo.' },
-                                    { id: '03', t: 'Descargar', d: 'Obtén tu PDF oficial como registro de la orden de compra.' },
+                                    { id: '03', t: 'Descargar', d: 'Obtén el PDF oficial como registro de la orden.' },
                                     { id: '04', t: 'Abonar', d: 'Realiza el abono correspondiente y notifica vía WhatsApp.' }
                                 ].map((step, i) => (
                                     <div key={i} className="flex flex-col gap-2 relative">
@@ -517,25 +543,17 @@
                             </div>
                         </div>
 
-                        {/* COMENTARIOS DE CLIENTE (NUEVO) */}
+                        {/* COMENTARIOS DE CLIENTE */}
                         <div className="mb-14 p-8 bg-zinc-50 border border-zinc-200 rounded-3xl no-print">
                             <span className="font-mono text-[10px] text-zinc-400 font-bold tracking-widest uppercase mb-3 block">/// Feedback & Notes</span>
                             <h3 className="text-lg font-bold text-ocd-black mb-4 uppercase tracking-tight font-sans">Observaciones adicionales</h3>
                             <textarea 
                                 value={observations}
                                 onChange={(e) => setObservations(e.target.value)}
-                                placeholder="Escribe aquí cualquier requerimiento especial, dudas o detalles adicionales para tu proyecto..."
+                                placeholder="Escribe aquí cualquier requerimiento especial, dudas o detalles adicionales para el proyecto..."
                                 className="w-full bg-white border border-zinc-200 rounded-xl p-4 text-sm text-zinc-700 placeholder:text-zinc-300 focus:border-ocd-green transition-all"
                             />
                         </div>
-
-                        {/* Versión para el PDF de las observaciones */}
-                        {observations && (
-                            <div className="hidden block p-8 border-l-4 border-ocd-green bg-zinc-50 mb-14 animate-fade-in" style={{ display: 'none' }}>
-                                <span className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-2 block">Notas del Cliente</span>
-                                <p className="text-sm italic text-zinc-700 whitespace-pre-wrap">"{observations}"</p>
-                            </div>
-                        )}
 
                         {/* FIRMAS Y SELLO */}
                         <div className="mt-24 md:mt-48 mb-14 flex flex-col md:flex-row justify-between items-center md:items-end gap-16 relative py-12 border-t border-b border-zinc-100">
@@ -566,9 +584,9 @@
                                 <div className="font-bold text-ocd-black uppercase text-[11px] md:text-[12px] tracking-[0.3em] font-sans leading-none">Aprobación Cliente</div>
                             </div>
 
-                            {/* Bloque Derecho: Firma Dirección (Con Sello Giratorio) */}
+                            {/* Bloque Derecho: Firma Dirección */}
                             <div className="flex-1 w-full md:w-auto text-center md:text-right relative z-10 flex flex-col items-center md:items-end group">
-                                <div className="absolute top-[-120px] md:top-[-130px] right-1/2 translate-x-1/2 md:translate-x-0 md:right-0 w-36 h-36 md:w-48 h-48 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
+                                <div className="absolute top-[-110px] md:top-[-130px] right-1/2 translate-x-1/2 md:translate-x-0 md:right-0 w-36 h-36 md:w-48 h-48 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
                                     <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_15s_linear_infinite]">
                                         <defs><path id="sealPath" d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0" /></defs>
                                         <text fontSize="10" fontWeight="bold" fill="currentColor" className="font-mono uppercase tracking-widest text-[10px]">
@@ -617,11 +635,24 @@
                                             <span className="text-ocd-green font-mono uppercase tracking-widest text-[11px] font-black">Open Ticket Benefit (-20%)</span>
                                             <span className="text-ocd-green font-mono font-black">-{fCLP(stats.discount)}</span>
                                         </div>
+                                        
+                                        {/* DESGLOSE TRIBUTARIO (NUEVO) */}
+                                        <div className="pt-4 border-t border-zinc-50 mt-4">
+                                            <div className="flex justify-between text-[11px] text-zinc-400 font-mono uppercase tracking-widest">
+                                                <span>Subtotal Neto (Líquido)</span>
+                                                <span>{fCLP(stats.finalLiquido)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[11px] text-zinc-400 font-mono uppercase tracking-widest mt-2">
+                                                <span>Retención Honorarios SII (13.75%)</span>
+                                                <span>{fCLP(stats.retencion)}</span>
+                                            </div>
+                                        </div>
+
                                         <div className="h-px bg-zinc-100 my-6"></div>
                                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
-                                            <span className="text-[11px] text-zinc-400 font-mono uppercase tracking-[0.2em] font-bold mb-1 leading-none shrink-0">Inversión Final Neta</span>
+                                            <span className="text-[11px] text-zinc-400 font-mono uppercase tracking-[0.2em] font-bold mb-1 leading-none shrink-0">Inversión Bruta Total</span>
                                             <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-zinc-900 tracking-tighter leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-full font-sans">
-                                                {fCLP(stats.final)}
+                                                {fCLP(stats.bruto)}
                                             </span>
                                         </div>
                                     </div>
@@ -676,7 +707,7 @@
                                 <div className="px-6 md:px-14 grid grid-cols-1 md:grid-cols-2 gap-8 items-start relative z-[30]">
                                     <div className="space-y-6 h-full flex flex-col justify-center order-2 md:order-1">
                                         <div className="p-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl h-full flex flex-col justify-center shadow-inner">
-                                            <p className="text-[13px] text-zinc-400 leading-relaxed mb-8 font-medium italic">Una vez aprobada la cotización, descarga el PDF y notifícanos vía WhatsApp con el comprobante de abono para iniciar operaciones.</p>
+                                            <p className="text-[13px] text-zinc-400 leading-relaxed mb-8 font-medium italic text-center md:text-left">Una vez aprobada la cotización, descarga el PDF y notifica vía WhatsApp compartiendo el comprobante de abono para iniciar operaciones.</p>
                                             <div className="flex flex-col gap-4">
                                                 <button onClick={handleDownloadPDF} disabled={isExporting} className={`bg-white text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 active:scale-95 active:opacity-70 flex justify-center items-center gap-3 transition-all shadow-xl ${isExporting ? 'opacity-50' : ''}`}>
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -692,22 +723,22 @@
 
                                     <div className="space-y-4 order-1 md:order-2">
                                         <div className="bg-[#111] p-8 rounded-3xl border border-zinc-800 shadow-inner">
-                                            <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block">Banca / Recepción</span>
-                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono">
+                                            <span className="font-mono text-[11px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-6 block text-center md:text-left">Banca / Recepción</span>
+                                            <div className="text-[14px] text-zinc-400 space-y-2 font-mono text-center md:text-left">
                                                 <strong className="text-white block mb-4 font-sans text-xl tracking-tight leading-none">Javiera Saint-Jour</strong>
                                                 <span className="block">RUT: 18.445.291-K</span>
                                                 <span className="block">Scotiabank — Cta. Corriente</span>
                                                 <span className="block">Nº 976998219</span>
-                                                <span className="block mt-4 text-zinc-300 font-bold">openclubdesign@gmail.com</span>
+                                                <span className="block mt-4 text-zinc-300 font-bold underline underline-offset-4 decoration-zinc-700">openclubdesign@gmail.com</span>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2 font-mono shadow-lg">✶ Conversar ahora</button>
+                                        <button onClick={() => handleWhatsApp('help')} className="w-full bg-white text-black px-8 py-4 rounded-full font-bold text-[12px] uppercase tracking-widest transition-all active:scale-95 active:opacity-70 flex items-center justify-center gap-2 font-mono shadow-lg hover:bg-zinc-200">✶ Conversar ahora</button>
                                     </div>
                                 </div>
 
                                 <div className="mt-16 text-center border-t border-zinc-800 pt-12">
-                                    <span className="block text-white text-[14px] font-bold tracking-[0.2em] uppercase mb-3 font-mono">muchas gracias ♡</span>
-                                    <span className="block text-ocd-green text-3xl md:text-4xl font-black tracking-tighter italic drop-shadow-[0_0_12px_rgba(0,214,79,0.4)] font-sans">~✷♡♡ será hermoso ♡♡✷~</span>
+                                    <span className="block text-white text-[14px] font-bold tracking-[0.2em] uppercase mb-3 font-mono opacity-50">muchas gracias ♡</span>
+                                    <span className="block text-ocd-green text-3xl md:text-4xl font-black tracking-tighter italic drop-shadow-[0_0_12px_rgba(0,214,79,0.4)] font-sans">~✷♡ será hermoso ♡✷~</span>
                                 </div>
                             </div>
                         </div>
