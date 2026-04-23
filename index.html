@@ -342,7 +342,7 @@
                                     <button onClick={() => document.getElementById('checkout-section').scrollIntoView({ behavior: 'smooth' })} className="w-full bg-ocd-green text-black font-mono text-[12px] font-bold py-4 rounded-xl uppercase tracking-widest hover:brightness-110 active:opacity-80 transition-all flex justify-center items-center gap-2">Ir a Finalizar</button>
                                 </div>
                             </div>
-                            <div className="cart-bubble" onClick={() => setIsCartOpen(!isCartOpen)}>
+                            <button type="button" className="cart-bubble" onClick={() => setIsCartOpen(!isCartOpen)}>
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-1">Total Proyecto</span>
                                     <span className="text-lg md:text-xl font-black tracking-tight">{fCLP(stats.final)}</span>
@@ -351,7 +351,7 @@
                                 <div className="bg-ocd-green text-black w-8 h-8 rounded-full flex items-center justify-center">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </div>
-                            </div>
+                            </button>
                         </div>
                     )}
 
@@ -437,25 +437,30 @@
                                 return (
                                     <div key={phase.id} className="w-full border border-ocd-border rounded-xl overflow-hidden shadow-sm">
                                         <div className="w-full flex justify-between items-center bg-ocd-gray px-5 py-3 no-print select-none">
-                                            <div className="flex items-center gap-4 flex-1 cursor-pointer py-1" onClick={() => togglePhase(phase.id)}>
-                                                <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
+                                            <button
+                                                type="button"
+                                                className="flex items-center gap-4 flex-1 py-2 text-left touch-manipulation active:opacity-70"
+                                                onClick={() => togglePhase(phase.id)}
+                                            >
+                                                <div className={`transition-transform duration-300 shrink-0 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}>
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                                 </div>
                                                 <div className="font-bold text-ocd-black text-[14px] uppercase tracking-wide leading-none">{phase.title}</div>
                                                 <span className={`font-mono text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-tighter ${phase.color}`}>{phase.tag}</span>
-                                            </div>
-                                            <div className="flex items-center gap-6">
+                                            </button>
+                                            <div className="flex items-center gap-4 shrink-0 ml-2">
                                                 <div className="font-mono text-[13px] text-ocd-textMuted font-bold">{fCLP(phasePrice)}</div>
                                                 <button 
+                                                    type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         const next = new Set(selectedItems);
                                                         phase.items.forEach(item => { if (isAllSelected) next.delete(item.id); else next.add(item.id); });
                                                         setSelectedItems(next);
                                                     }}
-                                                    className={`w-6 h-6 rounded border flex items-center justify-center shrink-0 transition-colors ${isAllSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-400 bg-white'}`}
+                                                    className={`w-8 h-8 rounded border flex items-center justify-center shrink-0 transition-colors touch-manipulation active:opacity-70 ${isAllSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-400 bg-white'}`}
                                                 >
-                                                    {isAllSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-[10px] md:h-[10px]"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                    {isAllSelected && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                                                 </button>
                                             </div>
                                         </div>
@@ -471,10 +476,15 @@
                                                     const isSelected = selectedItems.has(item.id);
                                                     const price = item.priceOverride !== undefined ? item.priceOverride : item.hours * BASE_RATE;
                                                     return (
-                                                        <div key={item.id} onClick={() => toggleItem(item.id)} className={`p-5 md:p-3 grid grid-cols-1 md:grid-cols-12 gap-4 cursor-pointer transition-colors touch-manipulation ${isSelected ? 'hover:bg-green-50' : 'opacity-40 grayscale print:hidden'}`}>
+                                                        <button
+                                                            type="button"
+                                                            key={item.id}
+                                                            onClick={() => toggleItem(item.id)}
+                                                            className={`w-full text-left p-5 md:p-3 grid grid-cols-1 md:grid-cols-12 gap-4 touch-manipulation transition-colors active:opacity-70 ${isSelected ? 'hover:bg-green-50' : 'opacity-40 grayscale print:hidden'}`}
+                                                        >
                                                             <div className="md:col-span-4 flex items-start gap-4">
-                                                                <div className={`no-print w-5 h-5 rounded-sm border flex items-center justify-center shrink-0 mt-0.5 ${isSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-300'}`}>
-                                                                    {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="md:w-2 md:h-2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                                <div className={`no-print w-6 h-6 rounded-sm border flex items-center justify-center shrink-0 mt-0.5 ${isSelected ? 'bg-ocd-green border-ocd-green text-black' : 'border-gray-300 bg-white'}`}>
+                                                                    {isSelected && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                                                                 </div>
                                                                 <span className="font-bold md:font-medium text-ocd-black text-[15px] md:text-sm leading-tight">{item.name}{item.isEssential && <span className="text-ocd-green font-bold ml-1">*</span>}</span>
                                                             </div>
@@ -482,7 +492,7 @@
                                                             <div className="md:col-span-2 pl-10 md:pl-0 text-left md:text-right font-mono text-[13px] md:text-xs text-ocd-textMuted font-bold uppercase">
                                                                 <span className="md:hidden text-zinc-400 mr-2">Inversión:</span>{price > 0 ? fCLP(price) : 'Cortesía'}
                                                             </div>
-                                                        </div>
+                                                        </button>
                                                     );
                                                 })}
                                             </div>
@@ -662,7 +672,8 @@
 
                         {/* FIRMAS Y SELLO */}
                         <div className="mt-36 flex flex-col md:flex-row justify-between items-center md:items-end pt-24 gap-10 relative pb-10">
-                            <div className="absolute top-10 md:-top-20 left-1/2 md:left-auto md:right-[15%] -translate-x-1/2 md:translate-x-0 w-32 h-32 md:w-44 h-44 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0">
+                            {/* Sello: en mobile va centrado arriba, en desktop va a la derecha */}
+                            <div className="w-32 h-32 md:w-44 md:h-44 text-ocd-green opacity-90 pointer-events-none mix-blend-multiply z-0 mx-auto md:absolute md:mx-0 md:right-[15%] md:-top-20 order-first md:order-none">
                                 <svg viewBox="0 0 100 100" className="w-full h-full animate-[spin_15s_linear_infinite]">
                                     <defs><path id="sealPath" d="M 50, 50 m -36, 0 a 36,36 0 1,1 72,0 a 36,36 0 1,1 -72,0" /></defs>
                                     <text fontSize="10" fontWeight="bold" fill="currentColor" className="font-mono uppercase tracking-widest">
