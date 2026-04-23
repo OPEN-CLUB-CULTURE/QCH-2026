@@ -238,21 +238,16 @@
                 setIsExporting(true);
                 
                 const element = document.querySelector('.a4-page');
-                const originalStyle = element.getAttribute('style');
-
-                // Asegurar ancho desktop para captura perfecta
-                element.style.width = '800px';
-                element.style.maxWidth = '800px';
                 
-                await new Promise(r => setTimeout(r, 600));
+                // Esperar para que cualquier estado de UI se estabilice
+                await new Promise(r => setTimeout(r, 400));
 
                 try {
                     const canvas = await html2canvas(element, {
-                        scale: 3,
+                        scale: 2.5,
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false,
-                        windowWidth: 800,
                         scrollY: -window.scrollY
                     });
                     
@@ -267,11 +262,10 @@
                     });
                     
                     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight);
-                    pdf.save(`Propuesta_Cotizacion_Queenchis_OCD.pdf`);
+                    pdf.save(`Propuesta_Queenchis_OCD.pdf`);
                 } catch (err) { 
                     console.error('PDF Export Failed:', err); 
                 } finally {
-                    element.setAttribute('style', originalStyle || '');
                     setIsExporting(false);
                 }
             };
@@ -445,6 +439,35 @@
                             </div>
                         </div>
 
+                        {/* HANDOFF SECCIÓN (RE-UBICADA) */}
+                        <div className="mb-14 px-2 md:px-0">
+                            <div className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-3 font-mono">/// Handoff</div>
+                            <h3 className="text-3xl font-black text-ocd-black mb-8 border-b border-ocd-border pb-3 uppercase tracking-tighter font-sans">Entregables finales</h3>
+                            <ul className="space-y-10">
+                                <li className="flex items-start gap-5">
+                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                                    <div>
+                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Logotipo oficial (Master Files)</strong>
+                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG). Incluye variantes cromáticas y reducciones técnicas.</span>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-5">
+                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                                    <div>
+                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Manual de marca (Guía Técnica)</strong>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
+                                    </div>
+                                </li>
+                                <li className="flex items-start gap-5">
+                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                                    <div>
+                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Archivos de producción final</strong>
+                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
                         {/* PROTOCOLO DE ACTIVACIÓN */}
                         <div className="mb-14 p-8 bg-zinc-950 border border-zinc-800 rounded-[2rem] text-white">
                             <span className="font-mono text-[10px] text-ocd-green font-bold tracking-widest uppercase mb-4 block">/// Protocolo de Activación</span>
@@ -466,7 +489,7 @@
                         </div>
 
                         {/* FIRMAS Y SELLO (CON ESPACIADO CORREGIDO PARA MOBILE) */}
-                        <div className="mt-64 md:mt-48 mb-14 flex flex-col md:flex-row justify-between items-center md:items-end gap-16 relative py-12 border-t border-zinc-100">
+                        <div className="mt-24 md:mt-48 mb-14 flex flex-col md:flex-row justify-between items-center md:items-end gap-16 relative py-12 border-t border-b border-zinc-100">
                             
                             {/* Bloque Izquierdo: Aprobación Cliente (Foco Destacado) */}
                             <div className={`flex-1 w-full md:w-auto text-center md:text-left relative z-10 flex flex-col items-center md:items-start group p-6 rounded-3xl transition-all duration-500 border-2 ${isApproved ? 'bg-ocd-green/5 border-ocd-green shadow-xl' : 'bg-zinc-50 border-zinc-200 shadow-sm'}`}>
@@ -548,7 +571,7 @@
                                         <div className="h-px bg-zinc-100 my-4"></div>
                                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
                                             <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-widest font-bold mb-1 leading-none">Inversión Final Neta</span>
-                                            <span className="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tighter leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+                                            <span className="text-2xl sm:text-4xl font-black text-zinc-900 tracking-tighter leading-none whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
                                                 {fCLP(stats.final)}
                                             </span>
                                         </div>
@@ -624,7 +647,7 @@
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                     {isExporting ? 'Procesando...' : '1. Descargar PDF Oficial'}
                                                 </button>
-                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 active:opacity-70 flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(74,222,128,0.2)]">
+                                                <button onClick={() => handleWhatsApp('payment')} className="bg-ocd-green text-black font-mono text-[13px] font-black py-5 rounded-2xl uppercase tracking-widest hover:brightness-110 transition-all flex justify-center items-center gap-3 shadow-[0_0_30px_rgba(74,222,128,0.2)]">
                                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                                                     2. Notificar vía WhatsApp
                                                 </button>
@@ -638,35 +661,6 @@
                                     <span className="block text-ocd-green text-3xl md:text-4xl font-black tracking-tighter italic drop-shadow-[0_0_12px_rgba(74,222,128,0.4)] font-sans">~✷♡♡ será hermoso ♡♡✷~</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="break-before-page pt-14"></div>
-                        <div className="mb-14 px-2 md:px-0">
-                            <div className="font-mono text-[11px] text-ocd-green font-bold tracking-widest uppercase mb-3 font-mono">/// Handoff</div>
-                            <h3 className="text-3xl font-black text-ocd-black mb-8 border-b border-ocd-border pb-3 uppercase tracking-tighter font-sans">Entregables finales</h3>
-                            <ul className="space-y-10">
-                                <li className="flex items-start gap-5">
-                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    <div>
-                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Logotipo oficial (Master Files)</strong>
-                                        <span className="text-zinc-600 text-[15px] leading-relaxed font-medium">Suministro de archivos maestros vectorizados para impresión profesional (AI, EPS, PDF) y versiones optimizadas para despliegue web (PNG, JPG, SVG). Incluye variantes cromáticas y reducciones técnicas.</span>
-                                    </div>
-                                </li>
-                                <li className="flex items-start gap-5">
-                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    <div>
-                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Manual de marca (Guía Técnica)</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Guía técnica integral que detalla: códigos de color (HEX/CMYK), uso de familias tipográficas, iconografía secundaria, dirección fotográfica y normas de aplicación para consistencia visual absoluta.</span>
-                                    </div>
-                                </li>
-                                <li className="flex items-start gap-5">
-                                    <div className="text-ocd-green mt-1 shrink-0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                                    <div>
-                                        <strong className="block text-ocd-black text-[18px] uppercase tracking-tight mb-1.5 leading-none">Archivos de producción final</strong>
-                                        <span className="text-zinc-600 text-[15px] font-medium leading-relaxed">Documentos finales listos para envío directo a imprenta y proveedores externos (Maquetación de menú, stickers y papelería varia según lo contratado).</span>
-                                    </div>
-                                </li>
-                            </ul>
                         </div>
                     </div>
                 </div>
