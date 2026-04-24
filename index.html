@@ -1219,7 +1219,7 @@ function App() {
           {/* ── APROBACIÓN & CONFORMIDAD ── */}
           <div className="px-8 md:px-14 py-10 border-b border-ocd-border">
             <div className="font-mono text-[10px] text-ocd-muted uppercase tracking-widest font-bold mb-6">/// Aprobación & Conformidad</div>
-            <div className="flex flex-col md:flex-row items-start md:items-end gap-8">
+            <div className="flex flex-col md:flex-row items-center md:items-end gap-8">
 
               {/* Bloque aprobación cliente */}
               <div className={`flex-1 w-full p-6 rounded-3xl border-2 transition-all duration-500 ${approved?'border-ocd-green bg-ocd-green/5 shadow-lg':'border-ocd-border bg-ocd-gray'}`}>
@@ -1355,7 +1355,7 @@ function App() {
 
           {/* Footer cierre */}
           <div className="px-8 md:px-14 py-10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
+            <div className="text-center md:text-left">
               <div className="font-black text-xl uppercase tracking-tighter text-black">Javiera Saint-Jour</div>
               <div className="font-mono text-[10px] text-ocd-muted uppercase tracking-widest mt-1">Dirección Creativa · Open Club · openclubdesign@gmail.com</div>
             </div>
